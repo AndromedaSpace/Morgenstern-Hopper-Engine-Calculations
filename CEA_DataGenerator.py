@@ -23,7 +23,7 @@ dOF = 0.05
 ox = "N2O"
 fuel = "paraffin"
 
-outFile = open("cea_resutls.txt", 'w')
+outFile = open("cea_results.txt", 'w')
 outFile.write("#Format : Pc OF eps Ivac Cstr Tc Cf\n")
 C = CEA_Obj(oxName=ox, fuelName=fuel, pressure_units='Pa')
 

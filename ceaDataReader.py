@@ -1,4 +1,4 @@
-class ceaDataReader(object):
+class ceaDataReader:
     dataPc = []
     dataOF = []
     dataEps = []
@@ -18,15 +18,14 @@ class ceaDataReader(object):
         data.pop(len(data)-1)
 
         for line in data:
-            line.split(' ')
-            print(line)
-            self.dataPc.append(line[0])
-            self.dataOF.append(line[1])
-            self.dataEps.append(line[2])
-            self.dataIvac.append(line[3])
-            self.dataCstr.append(line[4])
-            self.dataTc.append(line[5])
-            self.dataCf.append(line[6])
+            line = line.split(' ')
+            self.dataPc.append(float(line[0]))
+            self.dataOF.append(float(line[1]))
+            self.dataEps.append(float(line[2]))
+            self.dataIvac.append(float(line[3]))
+            self.dataCstr.append(float(line[4]))
+            self.dataTc.append(float(line[5]))
+            self.dataCf.append(float(line[6]))
 
     def getData(self):
         return self.dataPc , self.dataOF , self.dataEps , self.dataIvac , self.dataCstr , self.dataTc , self.dataCf 
