@@ -36,31 +36,32 @@ dataIvac = []
 dataCstr = []
 dataTc = []
 dataCf = []
+totalPSteps = (Pmax-Pmin)/dP
 while cP <= Pmax:
     cOF = OFmin
-    print(cP)
+    print("Progress", str((cP-Pmin)/(Pmax-Pmin) *100),'%')
     while cOF <= OFmax:
         outFile.write(str(cP) + ' ')
         outFile.write(str(cOF) + ' ')
-        dataPc.append(cP)
-        dataOF.append(cOF)
+        #dataPc.append(cP)
+        #dataOF.append(cOF)
 
 
         eps = C.get_eps_at_PcOvPe(Pc=cP, MR=cOF, PcOvPe=cP/Pe)
         outFile.write(str(eps) + ' ')
-        dataEps.append(eps)
+        #dataEps.append(eps)
 
         Ivac,Cstr,Tc = C.get_IvacCstrTc(Pc=cP, MR=cOF, eps=eps)
         outFile.write(str(Ivac) + ' ')
         outFile.write(str(Cstr) + ' ')
         outFile.write(str(Tc) + ' ')
-        dataIvac.append(Ivac)
-        dataCstr.append(Cstr)
-        dataTc.append(Tc)
+        #dataIvac.append(Ivac)
+        #dataCstr.append(Cstr)
+        #dataTc.append(Tc)
 
         Cf = C.get_PambCf(Pamb=Pe, Pc=cP, MR=cOF, eps=eps)
         outFile.write(str(Cf[1]) + '\n')
-        dataCf.append(Cf[1])
+        #dataCf.append(Cf[1])
 
         cOF += dOF
     cP += dP
