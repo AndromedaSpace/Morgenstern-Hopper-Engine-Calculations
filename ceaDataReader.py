@@ -19,13 +19,13 @@ class ceaDataReader:
 
         for line in data:
             line = line.split(' ')
-            self.dataPc.append(float(line[0]))
-            self.dataOF.append(float(line[1]))
-            self.dataEps.append(float(line[2]))
+            self.dataEps.append(float(line[0]))
+            self.dataPc.append(float(line[1]))
+            self.dataOF.append(float(line[2]))
             self.dataIvac.append(float(line[3]))
             self.dataCstr.append(float(line[4]))
             self.dataTc.append(float(line[5]))
             self.dataCf.append(float(line[6]))
 
     def getData(self):
-        return self.dataPc , self.dataOF , self.dataEps , self.dataIvac , self.dataCstr , self.dataTc , self.dataCf 
+        return self.dataEps, self.dataPc , self.dataOF , self.dataIvac , self.dataCstr , self.dataTc , self.dataCf 
