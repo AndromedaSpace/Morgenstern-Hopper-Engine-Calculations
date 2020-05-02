@@ -6,6 +6,7 @@ class ceaDataReader:
     dataCstr = []
     dataTc = []
     dataCf = []
+    dataSepState = []
 
     def readData(self,fileName):
         inFile = open(fileName, 'r')
@@ -26,6 +27,10 @@ class ceaDataReader:
             self.dataCstr.append(float(line[4]))
             self.dataTc.append(float(line[5]))
             self.dataCf.append(float(line[6]))
+            self.dataSepState.append({
+                'state' : line[7],
+                'data' : line[8]
+            })
 
     def getData(self):
-        return self.dataEps, self.dataPc , self.dataOF , self.dataIvac , self.dataCstr , self.dataTc , self.dataCf 
+        return self.dataEps, self.dataPc , self.dataOF , self.dataIvac , self.dataCstr , self.dataTc , self.dataCf , self.dataSepState
