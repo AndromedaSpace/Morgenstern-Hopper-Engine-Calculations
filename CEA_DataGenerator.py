@@ -96,7 +96,7 @@ if __name__ == '__main__':
         data[i] = [sublist[j] for j in indices]
     print("Writing data.")
     outFile = open(filename, 'w')
-    outFile.write("#Format: eps Pc OF Ivac Cstr Tc Cf SeparetionState")
+    outFile.write("#Format: eps Pc OF Ivac Cstr Tc Cf SeparetionState\n")
     for i in range(len(data[0])):
         outStr = ""
         for j in range(len(data)):
