@@ -45,6 +45,7 @@ def worker(q,EPSmin, EPSmax , dEPS , Pmin , Pmax, dP, OFmin , OFmax, dOF, printP
             cOF = OFmin
             while cOF <= OFmax:
                 Ivac,Cstr,Tc = C.get_IvacCstrTc(Pc=cP, MR=cOF, eps=cEPS)
+                Cstr /=  3.2808
 
                 Cf = C.get_PambCf(Pamb=Pe, Pc=cP, MR=cOF, eps=cEPS)
 
@@ -95,7 +96,7 @@ if __name__ == '__main__':
         data[i] = [sublist[j] for j in indices]
     print("Writing data.")
     outFile = open(filename, 'w')
-    outFile.write("#Format: eps Pc OF Ivac Cstr Tc Cf SeparetionState\n")
+    outFile.write("#Format: eps Pc(Pa) OF Ivac(s) Cstr(m/s) Tc(K) Cf SeparetionState\n")
     for i in range(len(data[0])):
         outStr = ""
         for j in range(len(data)):

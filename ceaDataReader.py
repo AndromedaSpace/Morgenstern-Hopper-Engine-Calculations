@@ -2,6 +2,7 @@ from copy import deepcopy
 
 class ceaDataReader:
     data = []
+    valNames = []
 
     def readData(self,fileName):
         inFile = open(fileName, 'r')
@@ -9,7 +10,7 @@ class ceaDataReader:
         self.data = inFile.read()
 
         self.data = self.data.split("\n")
-
+        self.valNames = self.data[0].split(' ')[2:]
         self.data.pop(0)
         self.data.pop(len(self.data)-1)
 
@@ -68,3 +69,6 @@ class ceaDataReader:
                 'data' : line[8]
             })
         return dataEps, dataPc , dataOF , dataIvac , dataCstr , dataTc , dataCf , dataSepState
+    
+    def getValNames(self):
+        return self.valNames

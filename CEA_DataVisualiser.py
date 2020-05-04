@@ -19,18 +19,25 @@ dataReader = ceaDataReader()
 dataReader.readData("cea_results.txt")
 
 packedData , EpsVals = dataReader.packAndGetData()
+valNames = dataReader.getValNames()
 cEPS = 0
 dataToShow = 2
 
 
-def showPlot(ax , x , y , z , states):
+def showPlot(ax , x , y , z , states,dataToShow,eps):
     ax.clear()
+    ax.set_title("Supersonic Expansion Ratio = %.4f" % (float(eps)))
+    ax.set_xlabel(valNames[0])
+    ax.set_ylabel(valNames[1])
+    ax.set_zlabel(valNames[dataToShow])
+    
     sepX = []
     sepY = []
     sepZ = []
     atX = []
     atY = []
     atZ = []
+    
     for i , state in enumerate(states):
         if state['state'] == 'Separated':
             sepX.append(x[i])
@@ -71,7 +78,7 @@ def main_animated(i):
             dataCut = len(packedData[cEPS][dataToShow]) - 1
                     
     
-    showPlot(ax1 , packedData[cEPS][0] , packedData[cEPS][1] , packedData[cEPS][dataToShow] , packedData[cEPS][-1])
+    showPlot(ax1 , packedData[cEPS][0] , packedData[cEPS][1] , packedData[cEPS][dataToShow] , packedData[cEPS][-1] , dataToShow, EpsVals[cEPS])
 
 
 ani = animation.FuncAnimation(fig, main_animated, interval = interval)
