@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 class ceaDataReader:
     data = []
 
@@ -26,7 +28,7 @@ class ceaDataReader:
             if line[0] != lastEPS:
                 lastEPS = line[0]
                 EpsVals.append(line[0])
-                packed.append(template)
+                packed.append(deepcopy(template))
             
             for i , entry in enumerate(line[1:]):
                 if i == len(line[1:]) - 2:
