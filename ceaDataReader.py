@@ -17,7 +17,7 @@ class ceaDataReader:
        
 
     def packAndGetData(self):
-        template = [[],[],[],[],[],[],[]]
+        template = [[],[],[],[],[],[],[],[]]
         lastEPS = ""
         packed = []
         EpsVals = []

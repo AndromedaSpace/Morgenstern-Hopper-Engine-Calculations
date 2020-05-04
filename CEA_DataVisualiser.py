@@ -59,20 +59,20 @@ def showPlot(ax , x , y , z , states,dataToShow,eps):
     
 def main_animated(i):
     global cEPS , dataToShow, dataCut
-    if keyboard.is_pressed('Right'):  
+    if keyboard.is_pressed('Up'):  
         if cEPS < len(packedData) - 1:
             cEPS += 1
             
-    elif keyboard.is_pressed('Left'):
+    elif keyboard.is_pressed('Down'):
         if cEPS > 0:
             cEPS -= 1
             
-    elif keyboard.is_pressed('Up'):
+    elif keyboard.is_pressed('Right'):
         if dataToShow < len(packedData[cEPS])-2:
             dataToShow += 1
             dataCut = len(packedData[cEPS][dataToShow]) - 1
             
-    elif keyboard.is_pressed('Down'):
+    elif keyboard.is_pressed('Left'):
         if dataToShow > 2:
             dataToShow -= 1
             dataCut = len(packedData[cEPS][dataToShow]) - 1
