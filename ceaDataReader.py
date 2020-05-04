@@ -24,14 +24,12 @@ class ceaDataReader:
                     line[-2] += line[-1]
                     line.pop(len(line)-1)
             if line[0] != lastEPS:
-                print(line[0])
                 lastEPS = line[0]
                 EpsVals.append(line[0])
                 packed.append(template)
             
             for i , entry in enumerate(line[1:]):
                 if i == len(line[1:]) - 2:
-                    #print("I appended a dict")
                     packed[-1][i].append({
                         'state' : entry,
                         'data' : ""
@@ -39,7 +37,6 @@ class ceaDataReader:
                 elif i == len(line[1:]) - 1:
                     packed[-1][i-1][-1]['data'] = entry
                 else:
-                    #print('len:' , len(packed[-1]), "i:", i , "data:", entry)
                     packed[-1][i].append(float(entry))
 
 

@@ -67,7 +67,6 @@ if __name__ == '__main__':
     for i in range(nProcesses):
         pEPSmin = EPSmin+EPS_step*i
         pEPSmax = EPSmin+EPS_step*(i+1)
-        #sprint("EPSmin:" , pEPSmin, "EPSmax", pEPSmax)
         if i == nProcesses - 1:
             printProgress = True
         else:
