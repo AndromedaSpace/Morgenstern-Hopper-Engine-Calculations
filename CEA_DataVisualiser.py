@@ -3,34 +3,83 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 import matplotlib.tri as mtri
+import keyboard
+import time
+import matplotlib.animation as animation
+
+interval = 100
 
 plt.style.use('dark_background')
 fig = plt.figure()
-ax1 = fig.add_subplot(321, projection='3d')
-ax2 = fig.add_subplot(322, projection='3d')
-ax3 = fig.add_subplot(323, projection='3d')
-ax4 = fig.add_subplot(324, projection='3d')
-ax5 = fig.add_subplot(325, projection='3d')
+ax1 = fig.add_subplot(111, projection='3d')
+
 
 dataReader = ceaDataReader()
 
 dataReader.readData("cea_results.txt")
 
-dataPc , dataOF , dataEps , dataIvac , dataCstr , dataTc , dataCf = dataReader.getData()
+packedData , EpsVals = dataReader.packAndGetData()
+valNames = dataReader.getValNames()
+cEPS = 0
+dataToShow = 2
 
-ax1.set_title("Vaccume Isp vs Pc vs OF")
-ax1.plot_trisurf(dataPc, dataOF , dataIvac, cmap=cm.coolwarm)
 
-ax2.set_title("Cstr vs Pc vs OF")
-ax2.plot_trisurf(dataPc, dataOF , dataCstr, cmap=cm.coolwarm)
+def showPlot(ax , x , y , z , states,dataToShow,eps):
+    ax.clear()
+    ax.set_title("Supersonic Expansion Ratio = %.4f" % (float(eps)))
+    ax.set_xlabel(valNames[0])
+    ax.set_ylabel(valNames[1])
+    ax.set_zlabel(valNames[dataToShow])
+    
+    sepX = []
+    sepY = []
+    sepZ = []
+    atX = []
+    atY = []
+    atZ = []
+    
+    for i , state in enumerate(states):
+        if state['state'] == 'Separated':
+            sepX.append(x[i])
+            sepY.append(y[i])
+            sepZ.append(z[i])
+        else:
+            atX.append(x[i])
+            atY.append(y[i])
+            atZ.append(z[i])
+    
+    try:
+        ax.plot_trisurf(atX,atY,atZ,cmap=cm.coolwarm)
+    except:pass
+    
+    try:
+        ax.plot_trisurf(sepX,sepY,sepZ,color='k')
+    except:pass
+    
+    
+def main_animated(i):
+    global cEPS , dataToShow, dataCut
+    if keyboard.is_pressed('Right'):  
+        if cEPS < len(packedData) - 1:
+            cEPS += 1
+            
+    elif keyboard.is_pressed('Left'):
+        if cEPS > 0:
+            cEPS -= 1
+            
+    elif keyboard.is_pressed('Up'):
+        if dataToShow < len(packedData[cEPS])-2:
+            dataToShow += 1
+            dataCut = len(packedData[cEPS][dataToShow]) - 1
+            
+    elif keyboard.is_pressed('Down'):
+        if dataToShow > 2:
+            dataToShow -= 1
+            dataCut = len(packedData[cEPS][dataToShow]) - 1
+                    
+    
+    showPlot(ax1 , packedData[cEPS][0] , packedData[cEPS][1] , packedData[cEPS][dataToShow] , packedData[cEPS][-1] , dataToShow, EpsVals[cEPS])
 
-ax3.set_title("Cf vs Pc vs OF")
-ax3.plot_trisurf(dataPc, dataOF , dataCf, cmap=cm.coolwarm)
 
-ax4.set_title("Tc vs Pc vs OF")
-ax4.plot_trisurf(dataPc, dataOF , dataTc, cmap=cm.coolwarm)
-
-ax5.set_title("Expansion Ration vs Pc vs OF")
-ax5.plot_trisurf(dataPc, dataOF , dataEps, cmap=cm.coolwarm)
-
+ani = animation.FuncAnimation(fig, main_animated, interval = interval)
 plt.show()
