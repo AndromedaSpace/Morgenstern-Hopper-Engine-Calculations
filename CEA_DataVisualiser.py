@@ -23,9 +23,32 @@ cEPS = 0
 dataToShow = 2
 
 
-def showPlot(ax , x , y , z , state):
+def showPlot(ax , x , y , z , states):
     ax.clear()
-    ax.plot_trisurf(x,y,z,cmap=cm.coolwarm)
+    sepX = []
+    sepY = []
+    sepZ = []
+    atX = []
+    atY = []
+    atZ = []
+    for i , state in enumerate(states):
+        if state['state'] == 'Separated':
+            sepX.append(x[i])
+            sepY.append(y[i])
+            sepZ.append(z[i])
+        else:
+            atX.append(x[i])
+            atY.append(y[i])
+            atZ.append(z[i])
+    
+    try:
+        ax.plot_trisurf(atX,atY,atZ,cmap=cm.coolwarm)
+    except:pass
+    
+    try:
+        ax.plot_trisurf(sepX,sepY,sepZ,color='k')
+    except:pass
+    
     
 def main_animated(i):
     global cEPS , dataToShow, dataCut
