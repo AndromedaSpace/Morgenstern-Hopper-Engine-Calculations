@@ -16,7 +16,7 @@ ax1 = fig.add_subplot(111, projection='3d')
 
 dataReader = ceaDataReader()
 
-dataReader.readData("cea_results.txt")
+dataReader.readDataFromFile("cea_results.txt")
 
 packedData , EpsVals = dataReader.packAndGetData()
 valNames = dataReader.getValNames()

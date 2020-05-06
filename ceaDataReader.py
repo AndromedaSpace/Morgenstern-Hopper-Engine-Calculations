@@ -4,7 +4,7 @@ class ceaDataReader:
     data = []
     valNames = []
 
-    def readData(self,fileName):
+    def readDataFromFile(self,fileName):
         inFile = open(fileName, 'r')
 
         self.data = inFile.read()
