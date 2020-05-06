@@ -22,7 +22,7 @@ class CEADataGenerator:
     def setFuel(self, fuelName = "paraffin"):
         self.fuel = fuelName
 
-    def singleWorker(self ,Pe,EPS, P,OF):
+    def singleWorker(self,Pe,EPS, P,OF):
         C = CEA_Obj(oxName=self.ox, fuelName=self.fuel, pressure_units='Pa')
         Ivac,Cstr,Tc = C.get_IvacCstrTc(Pc=P, MR=OF, eps=EPS)
         Isp = C.estimate_Ambient_Isp(Pc=P,MR=OF,eps=EPS, Pamb=Pe)[0]
@@ -114,7 +114,7 @@ class CEADataGenerator:
         outFile.close()
         print("Data written.")
     
-    def cleadData(self):
+    def clearData(self):
         self.data = []
 
 
