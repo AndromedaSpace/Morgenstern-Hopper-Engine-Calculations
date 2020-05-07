@@ -22,7 +22,17 @@ class engineSimulator():
     nozzleIneffiencyFactor = 0
 
 
-    def setFlightPofile(self , accentDecentAccel = 5, Tb = 20):
+    def __init__ (self, accentDecentAccel = 5 , Tb = 20 , m0 = 7, A = 0.565486678 , oxName = "N2O", fuelName = "paraffin", a = 0.472, n = 0.555, expsHalf = 0.261799, Inef = 0.94):
+        self.setFlightPofile(accentDecentAccel=accentDecentAccel, Tb = Tb)
+        self.setInitialRocketMass(m=m0)
+        self.setDragArea(A=A)
+        self.setOX(oxName=oxName)
+        self.setFuel(fuelName=fuelName)
+        self.setFuelRegressionCoeffs(a=a,n=n)
+        self.setExpansionHalfAngel(a=expsHalf)
+        self.setInefficienryFactor(n=Inef)
+
+    def setFlightPofile(self , accentDecentAccel, Tb):
         self.accentDecentAccel = accentDecentAccel
         self.Tb = Tb
 
@@ -32,21 +42,21 @@ class engineSimulator():
     def setDragArea(self, A):
         self.A = A
 
-    def setOX(self, oxName = "N2O"):
+    def setOX(self, oxName):
         self.ox = oxName
 
-    def setFuel(self, fuelName = "paraffin"):
+    def setFuel(self, fuelName):
         self.fuel = fuelName
     
     def setFuelRegressionCoeffs(self,a,n):
         self.a = a
         self.n = n
 
-    def setExpansionHalfAngel(self,a=0.261799):
+    def setExpansionHalfAngel(self,a):
         self.nozzleIneffiencyFactor(a)
         self.expansionHalfAngle = a
 
-    def setInefficienryFactor(self,n = 0.94):
+    def setInefficienryFactor(self,n):
         self.inefficiencyFactor = n
 
     def setNozzleIneffiencyFactor(self,a):
