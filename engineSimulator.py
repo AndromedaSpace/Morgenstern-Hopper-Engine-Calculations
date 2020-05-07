@@ -74,8 +74,8 @@ class engineSimulator():
     def getRho(self,y):
         return self.rho0
 
-    def getReqThrust(self , t, D):
-        return self.flightProfile(t) / self.m + D
+    def getReqThrust(self , t, D , profile = flightProfile):
+        return profile(t) / self.m + D
 
     def getAb(self,L,r):
         return 2 * math.pi * r * L
@@ -101,3 +101,6 @@ class engineSimulator():
 
     def getMdotFromPc(self, Pc , At , Cstr):
         return (Pc * At) / Cstr
+
+    def updateFirstOrderIntegral(self, val , valdot, dt):
+        return val + valdot * dt
