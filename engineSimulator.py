@@ -2,6 +2,7 @@ from copy import deepcopy
 from multiprocessing import Process, Queue
 from CEA_DataGenerator import CEADataGenerator
 import math
+import fluids
 
 class engineSimulator():
     
@@ -12,6 +13,7 @@ class engineSimulator():
     A = 0
     rho0 = 1.225
     Patm = 101325
+    y0 = 0
     T0 = 288.15
     ox = ""
     fuel = ""
@@ -22,7 +24,8 @@ class engineSimulator():
     nozzleIneffiencyFactor = 0
 
 
-    def __init__ (self, accentDecentAccel = 5 , Tb = 20 , m0 = 7, A = 0.565486678 , oxName = "N2O", fuelName = "paraffin", a = 0.472, n = 0.555, expsHalf = 0.261799, Inef = 0.94):
+    def __init__ (self, y0 = 0, accentDecentAccel = 5 , Tb = 20 , m0 = 7, A = 0.565486678 , oxName = "N2O", fuelName = "paraffin", a = 0.472, n = 0.555, expsHalf = 0.261799, Inef = 0.94):
+        self.setInitialHeight(h=y0)
         self.setFlightPofile(accentDecentAccel=accentDecentAccel, Tb = Tb)
         self.setInitialRocketMass(m=m0)
         self.setDragArea(A=A)
@@ -61,6 +64,9 @@ class engineSimulator():
 
     def setNozzleIneffiencyFactor(self,a):
         self.nozzleIneffiencyFactor = 1/2 * (1+math.cos(a))
+
+    def setInitialHeight(self,h):
+        self.y0 = h
 
     def flightProfile(self,t):
         if t <= self.Tb/5:
