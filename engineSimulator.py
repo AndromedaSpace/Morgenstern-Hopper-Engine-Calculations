@@ -14,10 +14,11 @@ class engineSimulator():
     A = 0
     rho0 = 1.225
     Patm = 101325
-    y0 = 0
+    h0 = 0
     T0 = 288.15
     ox = ""
     fuel = ""
+    fuelRho = 0
     a = 0
     n = 0
     expansionHalfAngle = 0
@@ -25,13 +26,14 @@ class engineSimulator():
     nozzleIneffiencyFactor = 0
 
 
-    def __init__ (self, y0 = 0, accentDecentAccel = 5 , Tb = 20 , m0 = 7, A = 0.565486678 , oxName = "N2O", fuelName = "paraffin", a = 0.472, n = 0.555, expsHalf = 0.261799, Inef = 0.94):
+    def __init__ (self, y0 = 0, accentDecentAccel = 5 , Tb = 20 , m0 = 7, A = 0.565486678 , oxName = "N2O", fuelName = "paraffin", fuelRho = 924.0, a = 0.472, n = 0.555, expsHalf = 0.261799, Inef = 0.94):
         self.setInitialHeight(h=y0)
         self.setFlightPofile(accentDecentAccel=accentDecentAccel, Tb = Tb)
         self.setInitialRocketMass(m=m0)
         self.setDragArea(A=A)
         self.setOX(oxName=oxName)
         self.setFuel(fuelName=fuelName)
+        self.setFuelRho(fuelRho = fuelRho)
         self.setFuelRegressionCoeffs(a=a,n=n)
         self.setExpansionHalfAngel(a=expsHalf)
         self.setInefficienryFactor(n=Inef)
@@ -52,6 +54,9 @@ class engineSimulator():
     def setFuel(self, fuelName):
         self.fuel = fuelName
     
+    def setFuelRho(self ,fuelRho):
+        self.fuelRho = fuelRho
+
     def setFuelRegressionCoeffs(self,a,n):
         self.a = a
         self.n = n
@@ -67,7 +72,7 @@ class engineSimulator():
         self.nozzleIneffiencyFactor = 1/2 * (1+math.cos(a))
 
     def setInitialHeight(self,h):
-        self.y0 = h
+        self.h0 = h
 
     def flightProfile(self,t):
         if t <= self.Tb/5:
@@ -88,11 +93,14 @@ class engineSimulator():
     def getCd(self, Vy):
         return 0.052
     
+    def getPe(self , h):
+        return self.Patm
+
     def getRho(self,y):
         return self.rho0
 
-    def getReqThrust(self , t, D , profile = flightProfile):
-        return profile(t) / self.m + D
+    def getReqThrust(self , m ,t, D , profile = flightProfile):
+        return profile(t) / m + D
 
     def getAb(self,L,r):
         return 2 * math.pi * r * L
@@ -139,3 +147,23 @@ class engineSimulator():
         r0 = fsolve(funcToMin , 1 , (fuelRho ,L , mfdot , moxdot , dt))
         
         return r0
+
+    def simInit(self, P0 , OF0, eps, L , dt):
+        
+        generator = CEADataGenerator()
+        generator.setFuel(fuelName= self.fuel)
+        generator.setOX(oxName=self.ox)
+        Ivac, Cstr, Tc, Cf, SeparationState = generator.singleWorker(Pe = self.getPe(self.h0), EPS=eps, P = P0 , OF = OF0)
+
+        At = self.getAt0( F=self.getReqThrust(m = self.m0 , t=0, D=self.getDrag(Vy = 0 , rho = self.rho0, Cd = self.getCd(0) ) ) , Cf = Cf , Pc = P0)
+
+
+        mdot = self.getMdotFromPc(Pc = P0 , At = At , Cstr = Cstr)
+        
+        moxdot = self.getMoxdot(mdot = mdot , OF = OF0) 
+
+        mfueldot = mdot - moxdot
+
+        r0 = self.getr0(mfdot = mfueldot , moxdot = moxdot , L = L , fuelRho = self.fuelRho , dt = dt)
+
+        return At , r0
