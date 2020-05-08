@@ -3,6 +3,7 @@ from multiprocessing import Process, Queue
 from CEA_DataGenerator import CEADataGenerator
 import math
 import fluids
+from scipy.optimize import fsolve
 
 class engineSimulator():
     
@@ -125,4 +126,16 @@ class engineSimulator():
         return val + valdot * dt
 
     def updateFirstOrderIntergral(self,val,valdot,valdotdot,dt):
-        return val + valdot * dt + 1/2 * valdotdot * (dt ** 2)    
+        return val + valdot * dt + 1/2 * valdotdot * (dt ** 2)
+    
+    def getAt0(self,F,Cf,Pc):
+        return F / (self.inefficiencyFactor * self.nozzleIneffiencyFactor * Cf * Pc)
+
+    def getr0(self,mfdot,moxdot,L,fuelRho,dt):
+        def funcToMin(r0 , *data):
+            rho, L, mfueldot, moxdot, dt = data
+            return (rho * L * math.pi * ( ( (r0 + self.a * ( (moxdot/(math.pi * (r0**2) ) ) ** self.n ) * dt ) ** 2 ) - (r0 ** 2) )) - mfueldot
+
+        r0 = fsolve(funcToMin , 1 , (fuelRho ,L , mfdot , moxdot , dt))
+        
+        return r0
