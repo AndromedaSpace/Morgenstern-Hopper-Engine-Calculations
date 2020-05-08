@@ -33,6 +33,7 @@ class CEADataGenerator:
             Isp,
             Cstr,
             Tc,
+            Cf,
             {
                 'state' : Cf[1],
                 'data' : Cf[2]

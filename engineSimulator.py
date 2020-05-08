@@ -109,8 +109,11 @@ class engineSimulator():
     def getMoxdot(self,mdot,OF):
         return mdot/(1+OF)
     
-    def getOF(self,moxdot,Ac,rdot):
-        return moxdot/(Ac*rdot)
+    def getOF(self,moxdot,L,r,rdot,fuelRho,dt):
+        Ac0 = self.getAc(r)
+        Ac1 = self.getAc(r+dt*rdot)
+        DV = L *  (Ac1 - Ac0)
+        return moxdot/(DV*fuelRho)
     
     def getPcFromT(self,T,At,Cf):
         return T/(self.inefficiencyFactor * self.nozzleIneffiencyFactor * Cf * At)
@@ -118,5 +121,8 @@ class engineSimulator():
     def getMdotFromPc(self, Pc , At , Cstr):
         return (Pc * At) / Cstr
 
-    def updateFirstOrderIntegral(self, val , valdot, dt):
+    def updateZeroOrderIntegral(self, val , valdot, dt):
         return val + valdot * dt
+
+    def updateFirstOrderIntergral(self,val,valdot,valdotdot,dt):
+        return val + valdot * dt + 1/2 * valdotdot * (dt ** 2)    
