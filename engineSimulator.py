@@ -153,7 +153,7 @@ class engineSimulator():
         generator = CEADataGenerator()
         generator.setFuel(fuelName= self.fuel)
         generator.setOX(oxName=self.ox)
-        Ivac, Cstr, Tc, Cf, SeparationState = generator.singleWorker(Pe = self.getPe(self.h0), EPS=eps, P = P0 , OF = OF0)
+        Ivac, Isp , Cstr, Tc, Cf, SeparationState = generator.singleWorker(Pe = self.getPe(self.h0), EPS=eps, P = P0 , OF = OF0)
 
         At = self.getAt0( F=self.getReqThrust(m = self.m0 , t=0, D=self.getDrag(Vy = 0 , rho = self.rho0, Cd = self.getCd(0) ) ) , Cf = Cf , Pc = P0)
 
