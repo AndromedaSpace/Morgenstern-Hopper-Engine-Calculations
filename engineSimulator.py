@@ -118,11 +118,9 @@ class engineSimulator():
     def getMoxdot(self,mdot,OF):
         return mdot/(1+OF)
     
-    def getOF(self,moxdot,L,r,rdot,fuelRho,dt):
-        Ac0 = self.getAc(r)
-        Ac1 = self.getAc(r+dt*rdot)
-        DV = L *  (Ac1 - Ac0)
-        return moxdot/(DV*fuelRho)
+    def getOF(self,moxdot,L,r, rdot):
+        Ab = self.getAb(L=L , r = r)
+        return moxdot/(Ab * rdot)
     
     def getPcFromT(self,T,At,Cf):
         return T/(self.inefficiencyFactor * self.nozzleIneffiencyFactor * Cf * At)
@@ -139,24 +137,22 @@ class engineSimulator():
     def getAt0(self,F,Cf,Pc):
         return F / (self.inefficiencyFactor * self.nozzleIneffiencyFactor * Cf * Pc)
 
-    def getr0(self,mfdot,moxdot,L,fuelRho,dt):
-        def funcToMin(r0 , *data):
-            rho, L, mfueldot, moxdot, dt = data
-            return (rho * L * math.pi * ( ( (r0 + self.a * ( (moxdot/(math.pi * (r0**2) ) ) ** self.n ) * dt ) ** 2 ) - (r0 ** 2) )) - mfueldot
+    def getr0(self,mfdot,moxdot,L,fuelRho):
+        def funcToMin(r0 ,*data):
+            a , n , L, mfueldot, moxdot, rho = data
+            return ((2 * math.pi * r0 * rho * L * a * ( ( (moxdot*1000 ) / ( math.pi * ( (r0*100) ** 2 ) ) )  ** n )) / 1000) - mfueldot
 
-        r0 = fsolve(funcToMin , 1 , (fuelRho ,L , mfdot , moxdot , dt))
-        
+        r0 = fsolve(funcToMin , 0.004 , (self.a , self.n , L , mfdot , moxdot , fuelRho) , factor=0.5)
         return r0
 
     def simInit(self, P0 , OF0, eps, L , dt):
-        
         generator = CEADataGenerator()
         generator.setFuel(fuelName= self.fuel)
         generator.setOX(oxName=self.ox)
+
         Ivac, Isp , Cstr, Tc, Cf, SeparationState = generator.singleWorker(Pe = self.getPe(self.h0), EPS=eps, P = P0 , OF = OF0)
 
-        At = self.getAt0( F=self.getReqThrust(m = self.m0 , t=0, D=self.getDrag(Vy = 0 , rho = self.rho0, Cd = self.getCd(0) ) ) , Cf = Cf , Pc = P0)
-
+        At = self.getAt0(F=self.getReqThrust(m = self.m0 , t=0, D=self.getDrag(Vy = 0 , rho = self.rho0, Cd = self.getCd(0) ) ) , Cf = Cf , Pc = P0)
 
         mdot = self.getMdotFromPc(Pc = P0 , At = At , Cstr = Cstr)
         
@@ -164,6 +160,6 @@ class engineSimulator():
 
         mfueldot = mdot - moxdot
 
-        r0 = self.getr0(mfdot = mfueldot , moxdot = moxdot , L = L , fuelRho = self.fuelRho , dt = dt)
+        r0 = self.getr0(mfdot = mfueldot , moxdot = moxdot , L = L , fuelRho = self.fuelRho)
 
         return At , r0
