@@ -99,8 +99,8 @@ class engineSimulator():
     def getRho(self,y):
         return self.rho0
 
-    def getReqThrust(self , m ,t, D , profile = flightProfile):
-        return profile(t) / m + D
+    def getReqThrust(self , m ,t, D , accel):
+        return (accel / m) + D
 
     def getAb(self,L,r):
         return 2 * math.pi * r * L
@@ -145,14 +145,14 @@ class engineSimulator():
         r0 = fsolve(funcToMin , 0.004 , (self.a , self.n , L , mfdot , moxdot , fuelRho) , factor=0.5)
         return r0
 
-    def simInit(self, P0 , OF0, eps, L , dt):
+    def simInit(self, P0 , OF0, eps, L , fuel, ox, dt):
         generator = CEADataGenerator()
-        generator.setFuel(fuelName= self.fuel)
-        generator.setOX(oxName=self.ox)
+        generator.setFuel(fuelName = fuel)
+        generator.setOX(oxName = ox)
 
         Ivac, Isp , Cstr, Tc, Cf, SeparationState = generator.singleWorker(Pe = self.getPe(self.h0), EPS=eps, P = P0 , OF = OF0)
 
-        At = self.getAt0(F=self.getReqThrust(m = self.m0 , t=0, D=self.getDrag(Vy = 0 , rho = self.rho0, Cd = self.getCd(0) ) ) , Cf = Cf , Pc = P0)
+        At = self.getAt0(F=self.getReqThrust(m = self.m0 , t=0, D = 0 ) , Cf = Cf , Pc = P0)
 
         mdot = self.getMdotFromPc(Pc = P0 , At = At , Cstr = Cstr)
         
@@ -163,3 +163,61 @@ class engineSimulator():
         r0 = self.getr0(mfdot = mfueldot , moxdot = moxdot , L = L , fuelRho = self.fuelRho)
 
         return At , r0
+
+    def runEngineSim(self,Pc,eps,OF,At,r,h,Tb,m,fuel,ox,L,dt):
+        t = 0
+        v = 0
+        generator = CEADataGenerator()
+        generator.setFuel(fuelName = fuel)
+        generator.setOX(oxName = ox)
+        medianIvac = 0
+        medianIsp = 0
+        medianTc = 0
+        medianPc = 0
+
+        iters  = int(Tb /dt)
+        while t <= Tb:
+            Pe = self.getPe(h = h)
+            Ivac, Isp , Cstr, Tc, Cf, SeparationState = generator.singleWorker(Pe = Pe, EPS=eps, P = Pc , OF = OF)
+            D = self.getDrag(Vy = v , rho = self.getRho(h), Cd = self.getCd(Vy = v))
+            accel = self.flightProfile(t=t)
+            T = self.getReqThrust(m = m , t = t, D = D,accel=accel)
+            Pc = self.getPcFromT(T = T ,At = At, Cf = Cf)
+            mdot = self.getMdotFromPc(Pc = Pc , At = At , Cstr = Cstr)
+            moxdot = self.getMoxdot(mdot = mdot , OF = OF)
+            rdot = self.getRdot(moxdot = moxdot, r = r)
+            r = self.updateZeroOrderIntegral(val = r , valdot = rdot, dt = dt)
+            OF = self.getOF(moxdot = moxdot , L = L, r = r, rdot = rdot)
+            h = self.updateFirstOrderIntergral(val = h , valdot = v , valdotdot = accel , dt = dt)
+            v = self.updateZeroOrderIntegral(val = v , valdot = accel , dt = dt)
+            m = self.updateZeroOrderIntegral(val = m , valdot = -mdot ,dt = dt)
+            
+            medianIvac += Ivac
+            medianIsp += Isp
+            medianPc += Pc
+            medianTc += Tc
+            
+            if SeparationState['state'] == 'Separated':
+                return{
+                    'state' : 'Separation'  ,
+                    'sepData' : SeparationState['data'] ,
+                    't' : t ,
+                    'Pc' : Pc
+                }
+
+            t += dt
+
+        medianIvac /= iters
+        medianIsp /= iters
+        medianPc /= iters
+        medianTc /= iters
+
+        return {
+            'state' : 'success',
+            'medianIvac' : medianIvac,
+            'medianIsp' : medianIsp,
+            'medianPc' : medianPc,
+            'medianTc' : medianTc
+        }
+        
+        
