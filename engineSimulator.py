@@ -152,7 +152,7 @@ class engineSimulator():
 
         Ivac, Isp , Cstr, Tc, Cf, SeparationState = generator.singleWorker(Pe = self.getPe(self.h0), EPS=eps, P = P0 , OF = OF0)
 
-        At = self.getAt0(F=self.getReqThrust(m = self.m0 , t=0, D = 0 ) , Cf = Cf , Pc = P0)
+        At = self.getAt0(F=self.getReqThrust(m = self.m0 , t=0, D = 0 , accel = self.flightProfile(t=0) ) , Cf = Cf , Pc = P0)
 
         mdot = self.getMdotFromPc(Pc = P0 , At = At , Cstr = Cstr)
         
