@@ -33,10 +33,10 @@ class CEADataGenerator:
             Isp,
             Cstr,
             Tc,
-            Cf,
+            Cf[1],
             {
-                'state' : Cf[1],
-                'data' : Cf[2]
+                'state' : Cf[2].split(' ')[0],
+                'data' : Cf[2].split(' ')[0]
             }
         ]
 

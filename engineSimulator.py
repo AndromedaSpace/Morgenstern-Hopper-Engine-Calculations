@@ -43,7 +43,7 @@ class engineSimulator():
         self.Tb = Tb
 
     def setInitialRocketMass(self,m):
-        self.m = m
+        self.m0 = m
 
     def setDragArea(self, A):
         self.A = A
@@ -62,7 +62,7 @@ class engineSimulator():
         self.n = n
 
     def setExpansionHalfAngel(self,a):
-        self.nozzleIneffiencyFactor(a)
+        self.setNozzleIneffiencyFactor(a)
         self.expansionHalfAngle = a
 
     def setInefficienryFactor(self,n):
@@ -96,11 +96,14 @@ class engineSimulator():
     def getPe(self , h):
         return self.Patm
 
+    def getG(self,h):
+        return 9.81
+
     def getRho(self,y):
         return self.rho0
 
-    def getReqThrust(self , m ,t, D , accel):
-        return (accel / m) + D
+    def getReqThrust(self , m , D , accel  , g):
+        return (accel + g) *  m + D
 
     def getAb(self,L,r):
         return 2 * math.pi * r * L
@@ -113,10 +116,10 @@ class engineSimulator():
 
     def getRdot(self,moxdot,r):
         Ac = self.getAc(r)
-        return self.a * (self.getGox(moxdot,Ac) ** self.n)
+        return self.a * (self.getGox(moxdot,Ac) ** self.n)/1000
     
     def getMoxdot(self,mdot,OF):
-        return mdot/(1+OF)
+        return mdot/(1+1/OF)
     
     def getOF(self,moxdot,L,r, rdot):
         Ab = self.getAb(L=L , r = r)
@@ -140,19 +143,19 @@ class engineSimulator():
     def getr0(self,mfdot,moxdot,L,fuelRho):
         def funcToMin(r0 ,*data):
             a , n , L, mfueldot, moxdot, rho = data
-            return ((2 * math.pi * r0 * rho * L * a * ( ( (moxdot*1000 ) / ( math.pi * ( (r0*100) ** 2 ) ) )  ** n )) / 1000) - mfueldot
+            print("moxdot", moxdot ,"mfdot",mfueldot,"gox" , (moxdot) / ( math.pi * ( (r0) ** 2 ) ), "rdot in meters" , a * ( ( (moxdot) / ( math.pi * ( (r0) ** 2 ) ) )  ** n )/1000 , 'r0' , r0 , 'error' , ((2 * math.pi * r0 * rho * L * a * ( ( (moxdot ) / ( math.pi * ( (r0) ** 2 ) ) )  ** n )))/1000 - mfueldot ) 
+            return ((2 * math.pi * r0 * rho * L * a * ( ( (moxdot) / ( math.pi * ( (r0) ** 2 ) ) )  ** n )))/1000 - mfueldot
 
-        r0 = fsolve(funcToMin , 0.004 , (self.a , self.n , L , mfdot , moxdot , fuelRho) , factor=0.5)
+        r0 = fsolve(funcToMin , 0.001 , (self.a , self.n , L , mfdot , moxdot , fuelRho) , factor=0.5)
         return r0
 
-    def simInit(self, P0 , OF0, eps, L , fuel, ox, dt):
+    def simInit(self, P0 , OF0, eps, L):
         generator = CEADataGenerator()
-        generator.setFuel(fuelName = fuel)
-        generator.setOX(oxName = ox)
-
+        generator.setFuel(fuelName = self.fuel)
+        generator.setOX(oxName = self.ox)
         Ivac, Isp , Cstr, Tc, Cf, SeparationState = generator.singleWorker(Pe = self.getPe(self.h0), EPS=eps, P = P0 , OF = OF0)
 
-        At = self.getAt0(F=self.getReqThrust(m = self.m0 , t=0, D = 0 , accel = self.flightProfile(t=0) ) , Cf = Cf , Pc = P0)
+        At = self.getAt0(F=self.getReqThrust(m = self.m0, D = 0 , accel = self.flightProfile(t=0), g = self.getG(self.h0) ) , Cf = Cf , Pc = P0)
 
         mdot = self.getMdotFromPc(Pc = P0 , At = At , Cstr = Cstr)
         
@@ -164,24 +167,29 @@ class engineSimulator():
 
         return At , r0
 
-    def runEngineSim(self,Pc,eps,OF,At,r,h,Tb,m,fuel,ox,L,dt):
+    def runEngineSim(self,Pc,eps,OF,At,r, L , h ,dt = 0.01):
         t = 0
         v = 0
         generator = CEADataGenerator()
-        generator.setFuel(fuelName = fuel)
-        generator.setOX(oxName = ox)
+        generator.setFuel(fuelName = self.fuel)
+        generator.setOX(oxName = self.ox)
         medianIvac = 0
         medianIsp = 0
         medianTc = 0
         medianPc = 0
 
+        m  = self.m0
+        Tb = self.Tb
+        h = self.h0
+
         iters  = int(Tb /dt)
+
         while t <= Tb:
             Pe = self.getPe(h = h)
             Ivac, Isp , Cstr, Tc, Cf, SeparationState = generator.singleWorker(Pe = Pe, EPS=eps, P = Pc , OF = OF)
             D = self.getDrag(Vy = v , rho = self.getRho(h), Cd = self.getCd(Vy = v))
             accel = self.flightProfile(t=t)
-            T = self.getReqThrust(m = m , t = t, D = D,accel=accel)
+            T = self.getReqThrust(m = m , D = D,accel=accel,g = self.getG(h))
             Pc = self.getPcFromT(T = T ,At = At, Cf = Cf)
             mdot = self.getMdotFromPc(Pc = Pc , At = At , Cstr = Cstr)
             moxdot = self.getMoxdot(mdot = mdot , OF = OF)
@@ -220,4 +228,9 @@ class engineSimulator():
             'medianTc' : medianTc
         }
         
-        
+if __name__ == '__main__':
+    engine = engineSimulator(accentDecentAccel=200,m0=3,n=0.46,a=0.15)
+    At , r0 = engine.simInit(30 * 10 ** 5, OF0 = 4, eps = 4, L = 0.33)
+    print('At' ,At)
+    print('Throat Radius' , math.sqrt(At / math.pi))
+    print(r0)
