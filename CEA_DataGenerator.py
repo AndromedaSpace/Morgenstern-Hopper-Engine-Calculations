@@ -2,6 +2,7 @@ from rocketcea.cea_obj import add_new_fuel, add_new_propellant
 from rocketcea.cea_obj_w_units import CEA_Obj
 import time
 from multiprocessing import Process, Queue
+import sys, os
 
 class CEADataGenerator:
     card_str = """
@@ -24,7 +25,9 @@ class CEADataGenerator:
 
     def singleWorker(self,Pe,EPS, P,OF):
         C = CEA_Obj(oxName=self.ox, fuelName=self.fuel, pressure_units='Pa')
+        sys.stdout = open(os.devnull, 'w')
         Ivac,Cstr,Tc = C.get_IvacCstrTc(Pc=P, MR=OF, eps=EPS)
+        sys.stdout = sys.__stdout__
         Isp = C.estimate_Ambient_Isp(Pc=P,MR=OF,eps=EPS, Pamb=Pe)[0]
         Cstr /=  3.2808
         Cf = C.get_PambCf(Pamb=Pe, Pc=P, MR=OF, eps=EPS)
