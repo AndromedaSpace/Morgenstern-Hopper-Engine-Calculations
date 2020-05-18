@@ -169,7 +169,7 @@ class engineSimulator():
 
         return At , r0
 
-    def runEngineSim(self,Pc,eps,OF,At,r, L , h ,dt = 0.01, breakAtSep = False):
+    def runEngineSim(self,Pc,eps,OF,At,r, L , h ,dt = 0.01, breakAtFailure = False):
         t = 0
         v = 0
         generator = CEADataGenerator()
@@ -213,7 +213,7 @@ class engineSimulator():
             medianPc += Pc
             medianTc += Tc
             
-            if SeparationState['state'] == 'Separated' and breakAtSep:
+            if SeparationState['state'] == 'Separated' and breakAtFailure:
                 return{
                     'state' : 'Separation'  ,
                     'sepData' : SeparationState['data'] ,
@@ -235,6 +235,30 @@ class engineSimulator():
             'medianPc' : medianPc,
             'medianTc' : medianTc
         }
+
+    def simulationHalnder(self, P0 , OF0, eps , L , dt = 0.01 , printInfo = False, breakAtFailure= False):
+        At , r0 = self.simInit(P0 = P0, OF0 = OF0, eps = eps, L = L)
+        engineRes = self.runEngineSim(
+            Pc = P0,
+            OF = OF0,
+            eps = eps,
+            At = At,
+            r = r0,
+            L = L,
+            h = self.h0,
+            dt = dt,
+            breakAtFailure = breakAtFailure
+        )
+
+        if printInfo:
+            print('At' ,At)
+            print('Throat Radius' , math.sqrt(At / math.pi))
+            print('r0',r0)
+            print('Port to Throat',r0/math.sqrt(At / math.pi))
+            print(engineRes)                
+            
+
+        return engineRes
         
 if __name__ == '__main__':
     engine = engineSimulator(accentDecentAccel=5,m0=7,n=0.46,a=0.15)
@@ -253,7 +277,7 @@ if __name__ == '__main__':
         L = 0.2,
         h = 0,
         dt = 0.01,
-        breakAtSep=True
+        breakAtFailure=True
     )
 
     print('Isp med' , engineRes['medianIsp'])
