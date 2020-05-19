@@ -24,6 +24,10 @@ class engineSimulator():
     expansionHalfAngle = 0
     inefficiencyFactor = 0
     nozzleIneffiencyFactor = 0
+    
+    PcMax = 0
+    TcMax = 0
+    mPropMax = 0
 
 
     def __init__ (self, y0 = 0, accentDecentAccel = 5 , Tb = 20 , m0 = 7, A = 0.565486678 , oxName = "N2O", fuelName = "paraffin", fuelRho = 924.0, a = 0.15, n = 0.46, expsHalf = 0.261799, Inef = 0.94):
@@ -73,6 +77,11 @@ class engineSimulator():
 
     def setInitialHeight(self,h):
         self.h0 = h
+
+    def setMechanicalLimits(self,Pmax,Tmax,Mmax):
+        self.PcMax = Pmax
+        self.TcMax = Tmax
+        self.mPropMax = Mmax 
 
     def flightProfile(self,t):
         if t <= self.Tb/5:
@@ -151,6 +160,18 @@ class engineSimulator():
         r0 = fsolve(funcToMin , 0.001 , (self.a , self.n , L , mfdot , moxdot , fuelRho) , factor=0.5)
         return r0[0]
 
+    def checkMechanicalFailure(self, P , T , m):
+        if P > self.PcMax:
+            return 'Max Pressure Exceeded'
+        
+        if T > self.TcMax:
+            return 'Max Temperature Exceeded'
+
+        if self.m0 - m > self.mPropMax:
+            return 'Max Propelent Mass Exceeded'
+
+        return False
+
     def simInit(self, P0 , OF0, eps, L, flightProfile):
         generator = CEADataGenerator()
         generator.setFuel(fuelName = self.fuel)
@@ -213,13 +234,39 @@ class engineSimulator():
             medianPc += Pc
             medianTc += Tc
             
-            if SeparationState['state'] == 'Separated' and breakAtFailure:
-                return{
-                    'state' : 'Separation'  ,
-                    'sepData' : SeparationState['data'] ,
-                    't' : t ,
-                    'Pc' : Pc
-                }
+            if breakAtFailure:
+                if SeparationState['state'] == 'Separated':
+                    return{
+                        'state' : 'Failure'  ,
+                        'cause' : 'Separation',
+                        'sepData' : SeparationState['data'] ,
+                        't' : t,
+                        'Pc' : Pc,
+                        'Tc' : Tc,
+                        'Pe' : Pe,
+                        'm' : m,
+                        'mdot' : mdot,
+                        'moxdot' : moxdot,
+                        'OF' : OF,
+                        'r' : r,
+                        'rdot' : rdot
+                    }
+                mechFail = self.checkMechanicalFailure(m = m , P = Pc , T = Tc)
+                if mechFail:
+                    return{
+                        'state' : 'Failure',
+                        'cause' : mechFail,
+                        't' : t,
+                        'Pc' : Pc,
+                        'Tc' : Tc,
+                        'Pe' : Pe,
+                        'm' : m,
+                        'mdot' : mdot,
+                        'moxdot' : moxdot,
+                        'OF' : OF,
+                        'r' : r,
+                        'rdot' : rdot
+                    }
 
             t += dt
 
@@ -229,7 +276,7 @@ class engineSimulator():
         medianTc /= iters
 
         return {
-            'state' : 'success',
+            'state' : 'Success',
             'medianIvac' : medianIvac,
             'medianIsp' : medianIsp,
             'medianPc' : medianPc,
@@ -263,4 +310,5 @@ class engineSimulator():
         
 if __name__ == '__main__':
     engine = engineSimulator(accentDecentAccel=5,m0=7,n=0.46,a=0.15)
-    engine.simulationHalnder(P0 = 30 * 10 ** 5 , OF0 = 7.1, eps = 3, L = 0.2, dt = 0.1, printInfo=True, breakAtFailure=True)
+    engine.setMechanicalLimits(Pmax = 30 * 10 **5  , Tmax = 7000 , Mmax= 3)
+    engine.simulationHalnder(P0 = 20 * 10 ** 5 , OF0 = 7.1, eps = 3, L = 0.2, dt = 0.1, printInfo=True, breakAtFailure=True)
