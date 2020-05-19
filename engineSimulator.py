@@ -134,8 +134,6 @@ class engineSimulator():
     
     def getOF(self,moxdot,L,r, rdot, fuelRho):
         Ab = self.getAb(L=L , r = r)
-        #print("r" , r)
-        #print("Ab" , Ab)
         return moxdot/(Ab * rdot * fuelRho)
     
     def getPcFromT(self,T,At,Cf):
@@ -156,7 +154,6 @@ class engineSimulator():
     def getr0(self,mfdot,moxdot,L,fuelRho):
         def funcToMin(r0 ,*data):
             a , n , L, mfueldot, moxdot, rho = data
-            #print("moxdot", moxdot ,"mfdot",mfueldot,"gox" , (moxdot) / ( math.pi * ( (r0) ** 2 ) ), "rdot in meters" , a * ( ( (moxdot) / ( math.pi * ( (r0) ** 2 ) ) )  ** n )/1000 , 'r0' , r0 , 'error' , ((2 * math.pi * r0 * rho * L * a * ( ( (moxdot ) / ( math.pi * ( (r0) ** 2 ) ) )  ** n )))/1000 - mfueldot ) 
             return ((2 * math.pi * r0 * rho * L * a * ( ( (moxdot) / ( math.pi * ( (r0) ** 2 ) ) )  ** n )))/1000 - mfueldot
 
         r0 = fsolve(funcToMin , 0.001 , (self.a , self.n , L , mfdot , moxdot , fuelRho) , factor=0.5)
