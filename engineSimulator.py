@@ -26,7 +26,7 @@ class engineSimulator():
     nozzleIneffiencyFactor = 0
 
 
-    def __init__ (self, y0 = 0, accentDecentAccel = 5 , Tb = 20 , m0 = 7, A = 0.565486678 , oxName = "N2O", fuelName = "paraffin", fuelRho = 924.0, a = 0.472, n = 0.555, expsHalf = 0.261799, Inef = 0.94):
+    def __init__ (self, y0 = 0, accentDecentAccel = 5 , Tb = 20 , m0 = 7, A = 0.565486678 , oxName = "N2O", fuelName = "paraffin", fuelRho = 924.0, a = 0.15, n = 0.46, expsHalf = 0.261799, Inef = 0.94):
         self.setInitialHeight(h=y0)
         self.setFlightPofile(accentDecentAccel=accentDecentAccel, Tb = Tb)
         self.setInitialRocketMass(m=m0)
@@ -151,7 +151,7 @@ class engineSimulator():
         r0 = fsolve(funcToMin , 0.001 , (self.a , self.n , L , mfdot , moxdot , fuelRho) , factor=0.5)
         return r0[0]
 
-    def simInit(self, P0 , OF0, eps, L):
+    def simInit(self, P0 , OF0, eps, L, flightProfile):
         generator = CEADataGenerator()
         generator.setFuel(fuelName = self.fuel)
         generator.setOX(oxName = self.ox)
@@ -169,7 +169,7 @@ class engineSimulator():
 
         return At , r0
 
-    def runEngineSim(self,Pc,eps,OF,At,r, L , h ,dt = 0.01, breakAtFailure = False):
+    def runEngineSim(self,Pc,eps,OF,At,r, L , h ,flightProfile , dt = 0.01, breakAtFailure = False):
         t = 0
         v = 0
         generator = CEADataGenerator()
@@ -236,8 +236,8 @@ class engineSimulator():
             'medianTc' : medianTc
         }
 
-    def simulationHalnder(self, P0 , OF0, eps , L , dt = 0.01 , printInfo = False, breakAtFailure= False):
-        At , r0 = self.simInit(P0 = P0, OF0 = OF0, eps = eps, L = L)
+    def simulationHalnder(self, P0 , OF0, eps , L , dt = 0.01 , printInfo = False, breakAtFailure= False, flightProfile = flightProfile):
+        At , r0 = self.simInit(P0 = P0, OF0 = OF0, eps = eps, L = L, flightProfile = flightProfile)
         engineRes = self.runEngineSim(
             Pc = P0,
             OF = OF0,
@@ -247,7 +247,8 @@ class engineSimulator():
             L = L,
             h = self.h0,
             dt = dt,
-            breakAtFailure = breakAtFailure
+            breakAtFailure = breakAtFailure,
+            flightProfile = flightProfile
         )
 
         if printInfo:
@@ -262,22 +263,4 @@ class engineSimulator():
         
 if __name__ == '__main__':
     engine = engineSimulator(accentDecentAccel=5,m0=7,n=0.46,a=0.15)
-    At , r0 = engine.simInit(30* 10 ** 5, OF0 = 7.1, eps = 3, L = 0.2)
-    print('At' ,At)
-    print('Throat Radius' , math.sqrt(At / math.pi))
-    print('r0',r0)
-    print('Port to Throat',r0/math.sqrt(At / math.pi))
-    
-    engineRes = engine.runEngineSim(
-        Pc = 30* 10 ** 5,
-        OF = 7.1,
-        eps = 3,
-        At = At,
-        r = r0,
-        L = 0.2,
-        h = 0,
-        dt = 0.01,
-        breakAtFailure=True
-    )
-
-    print('Isp med' , engineRes['medianIsp'])
+    engine.simulationHalnder(P0 = 30 * 10 ** 5 , OF0 = 7.1, eps = 3, L = 0.2, dt = 0.1, printInfo=True, breakAtFailure=True)
