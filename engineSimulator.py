@@ -190,7 +190,7 @@ class engineSimulator():
 
         return At , r0
 
-    def runEngineSim(self,Pc,eps,OF,At,r, L , h ,flightProfile , dt = 0.01, breakAtFailure = False):
+    def runEngineSim(self,Pc,eps,OF,At,r, L , h ,flightProfile , dt = 0.01, breakAtFailure = False, writeDetaildFileLog = False, filename = "burnData.txt"):
         t = 0
         v = 0
         generator = CEADataGenerator()
@@ -206,6 +206,8 @@ class engineSimulator():
         h = self.h0
 
         iters  = int(Tb /dt)
+        if writeDetaildFileLog:
+            outFile = open(filename , 'w')
 
         while t <= Tb:
             Pe = self.getPe(h = h)
@@ -227,9 +229,16 @@ class engineSimulator():
             medianIsp += Isp
             medianPc += Pc
             medianTc += Tc
-            
+
+            if writeDetaildFileLog:
+                writeStr = str(Pe) + ' ' + str(Ivac) + ' ' + str(Isp) + ' ' + str(Cstr) + ' ' + str(Tc) + ' ' + str(Cf) + ' ' + str(SeparationState['state']) + ' ' + str(D) + ' ' + str(accel) + ' '
+                writeStr += str(T) + ' ' + str(Pc) + ' ' + str(mdot) + ' ' + str(moxdot) + ' ' + str(rdot) + ' ' + str(r) + ' ' + str(OF) + ' ' + str(h) + ' ' + str(v) + ' ' + str(m) + '\n'
+                outFile.write(writeStr)
+
             if breakAtFailure:
                 if SeparationState['state'] == 'Separated':
+                    if writeDetaildFileLog:
+                        outFile.close()
                     return{
                         'state' : 'Failure'  ,
                         'cause' : 'Separation',
@@ -246,6 +255,8 @@ class engineSimulator():
                         'rdot' : rdot
                     }
                 mechFail = self.checkMechanicalFailure(m = m , P = Pc , T = Tc)
+                if writeDetaildFileLog:
+                    outFile.close()
                 if mechFail:
                     return{
                         'state' : 'Failure',
@@ -269,6 +280,9 @@ class engineSimulator():
         medianPc /= iters
         medianTc /= iters
 
+        if writeDetaildFileLog:
+            outFile.close()
+
         return {
             'state' : 'Success',
             'medianIvac' : medianIvac,
@@ -279,7 +293,7 @@ class engineSimulator():
             'r' : r
         }
 
-    def simulationHalnder(self, P0 , OF0, eps , L , dt = 0.01 , printInfo = False, breakAtFailure= False, flightProfile = flightProfile):
+    def simulationHalnder(self, P0 , OF0, eps , L , dt = 0.01 , printInfo = False, breakAtFailure= False, flightProfile = flightProfile , writeDetaildFileLog = False , filename = 'burnData.txt'):
         At , r0 = self.simInit(P0 = P0, OF0 = OF0, eps = eps, L = L, flightProfile = flightProfile)
         engineRes = self.runEngineSim(
             Pc = P0,
@@ -291,7 +305,9 @@ class engineSimulator():
             h = self.h0,
             dt = dt,
             breakAtFailure = breakAtFailure,
-            flightProfile = flightProfile
+            flightProfile = flightProfile,
+            writeDetaildFileLog = writeDetaildFileLog,
+            filename = filename
         )
 
         if printInfo:
