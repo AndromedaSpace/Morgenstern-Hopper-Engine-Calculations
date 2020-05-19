@@ -172,8 +172,9 @@ class engineSimulator():
         return False
 
     def checkErrosiveBurningWithinLimits(self , r , At):
-        if math.pi * r**2 / At < self.PortToThroatMin:
-            return True
+        PtT = math.pi * r**2 / At 
+        if PtT < self.PortToThroatMin:
+            return PtT
         return False
 
     def simInit(self, P0 , OF0, eps, L, flightProfile):
@@ -299,15 +300,18 @@ class engineSimulator():
 
     def simulationHalnder(self, P0 , OF0, eps , L , dt = 0.01 , printInfo = False, breakAtFailure= False, flightProfile = flightProfile , writeDetaildFileLog = False , filename = 'burnData.txt'):
         At , r0 = self.simInit(P0 = P0, OF0 = OF0, eps = eps, L = L, flightProfile = flightProfile)
-        if breakAtFailure and self.checkErrosiveBurningWithinLimits(At = At , r = r0):
-            res = {
-                'state' : 'Failure',
-                'cause' : 'Port to Throat Ratio out of bounds',
-                'At' : At,
-                'r0' : r0
-            }
-            if printInfo : print(res)
-            return res
+        if breakAtFailure:
+            PtT = self.checkErrosiveBurningWithinLimits(At = At , r = r0)
+            if PtT:
+                res = {
+                    'state' : 'Failure',
+                    'cause' : 'Port to Throat Ratio out of bounds',
+                    'At' : At,
+                    'r0' : r0,
+                    'Port To Throat Ratio' : PtT
+                }
+                if printInfo : print(res)
+                return res
         engineRes = self.runEngineSim(
             Pc = P0,
             OF = OF0,
@@ -334,6 +338,6 @@ class engineSimulator():
         return engineRes
         
 if __name__ == '__main__':
-    engine = engineSimulator(accentDecentAccel=5,m0=7,n=0.46,a=0.15)
-    engine.setMechanicalLimits(Pmax = 30 * 10 **5  , Tmax = 7000 , Mmax= 3)
-    engine.simulationHalnder(P0 = 20 * 10 ** 5 , OF0 = 7.1, eps = 3, L = 0.2, dt = 0.1, printInfo=True, breakAtFailure=True)
+    engine = engineSimulator(accentDecentAccel=5,m0=46,n=0.46,a=0.15,Tb = 15)
+    engine.setMechanicalLimits(Pmax = 30 * 10 **5  , Tmax = 7000 , Mmax= 4)
+    engine.simulationHalnder(P0 = 20 * 10 ** 5 , OF0 = 7, eps = 2, L = 0.2, dt = 0.1, printInfo=True, breakAtFailure=True,writeDetaildFileLog=True)
