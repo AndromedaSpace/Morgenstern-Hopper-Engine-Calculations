@@ -274,7 +274,9 @@ class engineSimulator():
             'medianIvac' : medianIvac,
             'medianIsp' : medianIsp,
             'medianPc' : medianPc,
-            'medianTc' : medianTc
+            'medianTc' : medianTc,
+            'm' : m,
+            'r' : r
         }
 
     def simulationHalnder(self, P0 , OF0, eps , L , dt = 0.01 , printInfo = False, breakAtFailure= False, flightProfile = flightProfile):
