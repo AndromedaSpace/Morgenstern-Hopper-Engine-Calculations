@@ -32,7 +32,7 @@ class engineSimulator():
 
     ignitionTime = 0
 
-    def __init__ (self, y0 = 0, accentDecentAccel = 5 , Tb = 20 , m0 = 7, A = 0.565486678 , oxName = "N2O", fuelName = "paraffin", fuelRho = 924.0, a = 0.15, n = 0.46, expsHalf = 0.261799, Inef = 0.94):
+    def __init__ (self, y0 = 0, accentDecentAccel = 5 , Tb = 20 , Ti = 1 , m0 = 7, A = 0.565486678 , oxName = "N2O", fuelName = "paraffin", fuelRho = 924.0, a = 0.15, n = 0.46, expsHalf = 0.261799, Inef = 0.94):
         self.setInitialHeight(h=y0)
         self.setFlightPofile(accentDecentAccel=accentDecentAccel, Tb = Tb)
         self.setInitialRocketMass(m=m0)
@@ -43,6 +43,7 @@ class engineSimulator():
         self.setFuelRegressionCoeffs(a=a,n=n)
         self.setExpansionHalfAngel(a=expsHalf)
         self.setInefficienryFactor(n=Inef)
+        self.setIgnitionTime(T = Ti)
 
     def setFlightPofile(self , accentDecentAccel, Tb):
         self.accentDecentAccel = accentDecentAccel
@@ -79,6 +80,9 @@ class engineSimulator():
 
     def setInitialHeight(self,h):
         self.h0 = h
+
+    def setIgnitionTime(self,T):
+        self.ignitionTime = T
 
     def setMechanicalLimits(self,Pmax,Tmax,Mmax , PtT = 1.8):
         self.PcMax = Pmax
