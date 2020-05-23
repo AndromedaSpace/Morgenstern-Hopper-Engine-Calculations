@@ -30,6 +30,7 @@ class engineSimulator():
     mPropMax = 0
     PortToThroatMin = 0
 
+    ignitionTime = 0
 
     def __init__ (self, y0 = 0, accentDecentAccel = 5 , Tb = 20 , m0 = 7, A = 0.565486678 , oxName = "N2O", fuelName = "paraffin", fuelRho = 924.0, a = 0.15, n = 0.46, expsHalf = 0.261799, Inef = 0.94):
         self.setInitialHeight(h=y0)
@@ -158,6 +159,20 @@ class engineSimulator():
 
         r0 = fsolve(funcToMin , 0.001 , (self.a , self.n , L , mfdot , moxdot , fuelRho) , factor=0.5)
         return r0[0]
+
+    def getri(self, P0 , OF0, eps, L, flightProfile , r0):
+        generator = CEADataGenerator()
+        generator.setFuel(fuelName = self.fuel)
+        generator.setOX(oxName = self.ox)
+        Ivac, Isp , Cstr, Tc, Cf, SeparationState = generator.singleWorker(Pe = self.getPe(self.h0), EPS=eps, P = P0 , OF = OF0)
+
+        At = self.getAt0(F=self.getReqThrust(m = self.m0, D = 0 , accel = self.flightProfile(t=0), g = self.getG(self.h0) ) , Cf = Cf , Pc = P0)
+
+        mdot = self.getMdotFromPc(Pc = P0 , At = At , Cstr = Cstr)
+        
+        moxdot = self.getMoxdot(mdot = mdot , OF = OF0) 
+
+        return ( (1 / ( 2*self.n +1 ) ) * ( r0 ** (2*self.n + 1) ) ) - (self.a * self.ignitionTime * ((moxdot/math.pi) ** self.n) )
 
     def checkMechanicalFailure(self, P , T , m):
         if P > self.PcMax:
