@@ -299,7 +299,7 @@ class engineSimulator():
         }
 
     def stateSimulationHandler(self, P0 , OF0, eps , L , dt = 0.01 , printInfo = False, breakAtFailure= False, flightProfile = flightProfile , writeDetaildFileLog = False , filename = 'burnData.txt'):
-        At , r0 = self.simInit(P0 = P0, OF0 = OF0, eps = eps, L = L, flightProfile = flightProfile)
+        At , r0 = self.stateSimInit(P0 = P0, OF0 = OF0, eps = eps, L = L, flightProfile = flightProfile)
         if breakAtFailure:
             PtT = self.checkErrosiveBurningWithinLimits(At = At , r = r0)
             if PtT:
@@ -312,7 +312,7 @@ class engineSimulator():
                 }
                 if printInfo : print(res)
                 return res
-        engineRes = self.runEngineSim(
+        engineRes = self.runEngineStateSim(
             Pc = P0,
             OF = OF0,
             eps = eps,
@@ -340,4 +340,4 @@ class engineSimulator():
 if __name__ == '__main__':
     engine = engineSimulator(accentDecentAccel=5,m0=46,n=0.46,a=0.15,Tb = 15)
     engine.setMechanicalLimits(Pmax = 30 * 10 **5  , Tmax = 7000 , Mmax= 4)
-    engine.stateSimulationHalnder(P0 = 20 * 10 ** 5 , OF0 = 7, eps = 2, L = 0.2, dt = 0.1, printInfo=True, breakAtFailure=True, writeDetaildFileLog=True)
+    engine.stateSimulationHandler(P0 = 20 * 10 ** 5 , OF0 = 7, eps = 2, L = 0.2, dt = 0.1, printInfo=True, breakAtFailure=True, writeDetaildFileLog=True)
