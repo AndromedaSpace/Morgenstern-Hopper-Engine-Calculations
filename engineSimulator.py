@@ -252,7 +252,7 @@ class engineSimulator():
                         'Pc' : Pc,
                         'Tc' : Tc,
                         'Pe' : Pe,
-                        'm' : m,
+                        'mfuel' : self.m0 - m,
                         'mdot' : mdot,
                         'moxdot' : moxdot,
                         'OF' : OF,
@@ -270,7 +270,7 @@ class engineSimulator():
                         'Pc' : Pc,
                         'Tc' : Tc,
                         'Pe' : Pe,
-                        'm' : m,
+                        'mfuel' : self.m0 - m,
                         'mdot' : mdot,
                         'moxdot' : moxdot,
                         'OF' : OF,
@@ -294,7 +294,7 @@ class engineSimulator():
             'medianIsp' : medianIsp,
             'medianPc' : medianPc,
             'medianTc' : medianTc,
-            'm' : m,
+            'mfuel' : self.m0 - m,
             'r' : r
         }
 
