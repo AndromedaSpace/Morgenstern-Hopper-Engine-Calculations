@@ -176,8 +176,8 @@ class engineSimulator():
         
         moxdot = self.getMoxdot(mdot = mdot , OF = OF0) 
         
-        C = (( (1 / ( 2*self.n +1 ) ) * ( (r0*1000) ** (2*self.n + 1) ) ) - (self.a * self.ignitionTime * ((moxdot/math.pi) ** self.n) ))
-        ri = ((C * (2 * self.n + 1 ) ) ** (1 / (2 * self.n + 1 ) )) / 1000
+        C = (( (1 / ( 2*self.n +1 ) ) * ( (r0) ** (2*self.n + 1) ) )  - ((self.a * self.ignitionTime / 1000) * ((moxdot/math.pi) ** self.n) )) 
+        ri = ((C * (2 * self.n + 1 ) ) ** (1 / (2 * self.n + 1 ) ))
 
         return  ri , (math.pi * L * ((r0**2) - (ri**2) )) * self.fuelRho + moxdot * self.ignitionTime
 
@@ -363,6 +363,6 @@ class engineSimulator():
         return engineRes
         
 if __name__ == '__main__':
-    engine = engineSimulator(accentDecentAccel=5,m0=46,n=0.46,a=0.15,Tb = 15)
+    engine = engineSimulator(accentDecentAccel=5,m0=46,n=0.46,a=0.15,Tb = 15,Ti = 0.5)
     engine.setMechanicalLimits(Pmax = 30 * 10 **5  , Tmax = 7000 , Mmax= 4)
-    engine.stateSimulationHandler(P0 = 20 * 10 ** 5 , OF0 = 7, eps = 2, L = 0.2, dt = 0.1, printInfo=True, breakAtFailure=True, writeDetaildFileLog=True)
+    engine.stateSimulationHandler(P0 = 20 * 10 ** 5 , OF0 = 7, eps = 2, L = 0.2, dt = 0.1, printInfo=True, breakAtFailure=True, writeDetaildFileLog=False)
