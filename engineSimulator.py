@@ -175,7 +175,9 @@ class engineSimulator():
         mdot = self.getMdotFromPc(Pc = P0 , At = At , Cstr = Cstr)
         
         moxdot = self.getMoxdot(mdot = mdot , OF = OF0) 
-        ri = ( (1 / ( 2*self.n +1 ) ) * ( r0* 1000 ** (2*self.n + 1) ) ) - (self.a * self.ignitionTime * ((moxdot/math.pi) ** self.n) ) / 1000
+        
+        C = (( (1 / ( 2*self.n +1 ) ) * ( (r0*1000) ** (2*self.n + 1) ) ) - (self.a * self.ignitionTime * ((moxdot/math.pi) ** self.n) ))
+        ri = ((C * (2 * self.n + 1 ) ) ** (1 / (2 * self.n + 1 ) )) / 1000
 
         return  ri , (math.pi * L * ((r0**2) - (ri**2) )) * self.fuelRho + moxdot * self.ignitionTime
 
