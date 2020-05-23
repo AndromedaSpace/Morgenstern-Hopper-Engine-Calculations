@@ -79,7 +79,7 @@ class engineSimulator():
     def setInitialHeight(self,h):
         self.h0 = h
 
-    def setMechanicalLimits(self,Pmax,Tmax,Mmax , PtT = 1.5):
+    def setMechanicalLimits(self,Pmax,Tmax,Mmax , PtT = 1.8):
         self.PcMax = Pmax
         self.TcMax = Tmax
         self.mPropMax = Mmax 
@@ -177,7 +177,7 @@ class engineSimulator():
             return PtT
         return False
 
-    def simInit(self, P0 , OF0, eps, L, flightProfile):
+    def stateSimInit(self, P0 , OF0, eps, L, flightProfile):
         generator = CEADataGenerator()
         generator.setFuel(fuelName = self.fuel)
         generator.setOX(oxName = self.ox)
@@ -195,7 +195,7 @@ class engineSimulator():
 
         return At , r0
 
-    def runEngineSim(self,Pc,eps,OF,At,r, L , h ,flightProfile , dt = 0.01, breakAtFailure = False, writeDetaildFileLog = False, filename = "burnData.txt"):
+    def runEngineStateSim(self,Pc,eps,OF,At,r, L , h ,flightProfile , dt = 0.01, breakAtFailure = False, writeDetaildFileLog = False, filename = "burnData.txt"):
         t = 0
         v = 0
         generator = CEADataGenerator()
@@ -298,7 +298,7 @@ class engineSimulator():
             'r' : r
         }
 
-    def simulationHalnder(self, P0 , OF0, eps , L , dt = 0.01 , printInfo = False, breakAtFailure= False, flightProfile = flightProfile , writeDetaildFileLog = False , filename = 'burnData.txt'):
+    def stateSimulationHandler(self, P0 , OF0, eps , L , dt = 0.01 , printInfo = False, breakAtFailure= False, flightProfile = flightProfile , writeDetaildFileLog = False , filename = 'burnData.txt'):
         At , r0 = self.simInit(P0 = P0, OF0 = OF0, eps = eps, L = L, flightProfile = flightProfile)
         if breakAtFailure:
             PtT = self.checkErrosiveBurningWithinLimits(At = At , r = r0)
@@ -340,4 +340,4 @@ class engineSimulator():
 if __name__ == '__main__':
     engine = engineSimulator(accentDecentAccel=5,m0=46,n=0.46,a=0.15,Tb = 15)
     engine.setMechanicalLimits(Pmax = 30 * 10 **5  , Tmax = 7000 , Mmax= 4)
-    engine.simulationHalnder(P0 = 20 * 10 ** 5 , OF0 = 7, eps = 2, L = 0.2, dt = 0.1, printInfo=True, breakAtFailure=True,writeDetaildFileLog=True)
+    engine.simulationHalnder(P0 = 20 * 10 ** 5 , OF0 = 7, eps = 2, L = 0.2, dt = 0.1, printInfo=True, breakAtFailure=True, writeDetaildFileLog=True)
