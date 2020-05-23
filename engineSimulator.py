@@ -271,7 +271,7 @@ class engineSimulator():
                         'Pc' : Pc,
                         'Tc' : Tc,
                         'Pe' : Pe,
-                        'mfuel' : self.m0 - m,
+                        'mprop' : self.m0 - m,
                         'mdot' : mdot,
                         'moxdot' : moxdot,
                         'OF' : OF,
@@ -289,7 +289,7 @@ class engineSimulator():
                         'Pc' : Pc,
                         'Tc' : Tc,
                         'Pe' : Pe,
-                        'mfuel' : self.m0 - m,
+                        'mprop' : self.m0 - m,
                         'mdot' : mdot,
                         'moxdot' : moxdot,
                         'OF' : OF,
@@ -313,7 +313,7 @@ class engineSimulator():
             'medianIsp' : medianIsp,
             'medianPc' : medianPc,
             'medianTc' : medianTc,
-            'mfuel' : self.m0 - m,
+            'mprop' : self.m0 - m,
             'r' : r
         }
 
@@ -350,7 +350,7 @@ class engineSimulator():
         engineRes['At'] = At
         engineRes['r0'] = r0
         engineRes['ri'] = ri
-        engineRes['mfuel'] = engineRes['mfuel'] + (math.pi * L * ((r0**2) - (ri**2) )) * self.fuelRho
+        engineRes['mprop'] = engineRes['mprop'] + (math.pi * L * ((r0**2) - (ri**2) )) * self.fuelRho
 
         if printInfo:
             print('Port to Throat',  math.pi * ri**2 / At )
