@@ -164,7 +164,7 @@ class engineSimulator():
         r0 = fsolve(funcToMin , 0.001 , (self.a , self.n , L , mfdot , moxdot , fuelRho) , factor=0.5)
         return r0[0]
 
-    def getri(self, P0 , OF0, eps, L, flightProfile , r0):
+    def getriMi(self, P0 , OF0, eps, L, flightProfile , r0):
         generator = CEADataGenerator()
         generator.setFuel(fuelName = self.fuel)
         generator.setOX(oxName = self.ox)
@@ -175,8 +175,9 @@ class engineSimulator():
         mdot = self.getMdotFromPc(Pc = P0 , At = At , Cstr = Cstr)
         
         moxdot = self.getMoxdot(mdot = mdot , OF = OF0) 
+        ri = ( (1 / ( 2*self.n +1 ) ) * ( r0* 1000 ** (2*self.n + 1) ) ) - (self.a * self.ignitionTime * ((moxdot/math.pi) ** self.n) ) / 1000
 
-        return ( (1 / ( 2*self.n +1 ) ) * ( r0 ** (2*self.n + 1) ) ) - (self.a * self.ignitionTime * ((moxdot/math.pi) ** self.n) )
+        return  ri , (math.pi * L * ((r0**2) - (ri**2) )) * self.fuelRho + moxdot * self.ignitionTime
 
     def checkMechanicalFailure(self, P , T , m):
         if P > self.PcMax:
@@ -319,7 +320,7 @@ class engineSimulator():
 
     def stateSimulationHandler(self, P0 , OF0, eps , L , dt = 0.01 , printInfo = False, breakAtFailure= False, flightProfile = flightProfile , writeDetaildFileLog = False , filename = 'burnData.txt'):
         At , r0 = self.stateSimInit(P0 = P0, OF0 = OF0, eps = eps, L = L, flightProfile = flightProfile)
-        ri = self.getri(P0 = P0, OF0 = OF0 , eps = eps , L = L , flightProfile= flightProfile, r0 = r0)
+        ri , mi = self.getriMi(P0 = P0, OF0 = OF0 , eps = eps , L = L , flightProfile= flightProfile, r0 = r0)
         if breakAtFailure:
             PtT = self.checkErrosiveBurningWithinLimits(At = At , r = ri)
             if PtT:
@@ -350,7 +351,7 @@ class engineSimulator():
         engineRes['At'] = At
         engineRes['r0'] = r0
         engineRes['ri'] = ri
-        engineRes['mprop'] = engineRes['mprop'] + (math.pi * L * ((r0**2) - (ri**2) )) * self.fuelRho
+        engineRes['mprop'] = engineRes['mprop'] + mi
 
         if printInfo:
             print('Port to Throat',  math.pi * ri**2 / At )
