@@ -30,8 +30,9 @@ class engineSimulator():
     mPropMax = 0
     PortToThroatMin = 0
 
+    ignitionTime = 0
 
-    def __init__ (self, y0 = 0, accentDecentAccel = 5 , Tb = 20 , m0 = 7, A = 0.565486678 , oxName = "N2O", fuelName = "paraffin", fuelRho = 924.0, a = 0.15, n = 0.46, expsHalf = 0.261799, Inef = 0.94):
+    def __init__ (self, y0 = 0, accentDecentAccel = 5 , Tb = 20 , Ti = 1 , m0 = 7, A = 0.565486678 , oxName = "N2O", fuelName = "paraffin", fuelRho = 924.0, a = 0.15, n = 0.46, expsHalf = 0.261799, Inef = 0.94):
         self.setInitialHeight(h=y0)
         self.setFlightPofile(accentDecentAccel=accentDecentAccel, Tb = Tb)
         self.setInitialRocketMass(m=m0)
@@ -42,6 +43,7 @@ class engineSimulator():
         self.setFuelRegressionCoeffs(a=a,n=n)
         self.setExpansionHalfAngel(a=expsHalf)
         self.setInefficienryFactor(n=Inef)
+        self.setIgnitionTime(T = Ti)
 
     def setFlightPofile(self , accentDecentAccel, Tb):
         self.accentDecentAccel = accentDecentAccel
@@ -79,7 +81,10 @@ class engineSimulator():
     def setInitialHeight(self,h):
         self.h0 = h
 
-    def setMechanicalLimits(self,Pmax,Tmax,Mmax , PtT = 1.5):
+    def setIgnitionTime(self,T):
+        self.ignitionTime = T
+
+    def setMechanicalLimits(self,Pmax,Tmax,Mmax , PtT = 1.8):
         self.PcMax = Pmax
         self.TcMax = Tmax
         self.mPropMax = Mmax 
@@ -159,6 +164,23 @@ class engineSimulator():
         r0 = fsolve(funcToMin , 0.001 , (self.a , self.n , L , mfdot , moxdot , fuelRho) , factor=0.5)
         return r0[0]
 
+    def getriMi(self, P0 , OF0, eps, L, flightProfile , r0):
+        generator = CEADataGenerator()
+        generator.setFuel(fuelName = self.fuel)
+        generator.setOX(oxName = self.ox)
+        Ivac, Isp , Cstr, Tc, Cf, SeparationState = generator.singleWorker(Pe = self.getPe(self.h0), EPS=eps, P = P0 , OF = OF0)
+
+        At = self.getAt0(F=self.getReqThrust(m = self.m0, D = 0 , accel = self.flightProfile(t=0), g = self.getG(self.h0) ) , Cf = Cf , Pc = P0)
+
+        mdot = self.getMdotFromPc(Pc = P0 , At = At , Cstr = Cstr)
+        
+        moxdot = self.getMoxdot(mdot = mdot , OF = OF0) 
+        
+        C = (( (1 / ( 2*self.n +1 ) ) * ( (r0) ** (2*self.n + 1) ) )  - ((self.a * self.ignitionTime / 1000) * ((moxdot/math.pi) ** self.n) )) 
+        ri = ((C * (2 * self.n + 1 ) ) ** (1 / (2 * self.n + 1 ) ))
+
+        return  ri , (math.pi * L * ((r0**2) - (ri**2) )) * self.fuelRho + moxdot * self.ignitionTime
+
     def checkMechanicalFailure(self, P , T , m):
         if P > self.PcMax:
             return 'Max Pressure Exceeded'
@@ -177,7 +199,7 @@ class engineSimulator():
             return PtT
         return False
 
-    def simInit(self, P0 , OF0, eps, L, flightProfile):
+    def stateSimInit(self, P0 , OF0, eps, L, flightProfile):
         generator = CEADataGenerator()
         generator.setFuel(fuelName = self.fuel)
         generator.setOX(oxName = self.ox)
@@ -195,7 +217,7 @@ class engineSimulator():
 
         return At , r0
 
-    def runEngineSim(self,Pc,eps,OF,At,r, L , h ,flightProfile , dt = 0.01, breakAtFailure = False, writeDetaildFileLog = False, filename = "burnData.txt"):
+    def runEngineStateSim(self,Pc,eps,OF,At,r, L , h ,flightProfile , dt = 0.01, breakAtFailure = False, writeDetaildFileLog = False, filename = "burnData.txt"):
         t = 0
         v = 0
         generator = CEADataGenerator()
@@ -252,7 +274,7 @@ class engineSimulator():
                         'Pc' : Pc,
                         'Tc' : Tc,
                         'Pe' : Pe,
-                        'm' : m,
+                        'mprop' : self.m0 - m,
                         'mdot' : mdot,
                         'moxdot' : moxdot,
                         'OF' : OF,
@@ -270,7 +292,7 @@ class engineSimulator():
                         'Pc' : Pc,
                         'Tc' : Tc,
                         'Pe' : Pe,
-                        'm' : m,
+                        'mprop' : self.m0 - m,
                         'mdot' : mdot,
                         'moxdot' : moxdot,
                         'OF' : OF,
@@ -294,25 +316,27 @@ class engineSimulator():
             'medianIsp' : medianIsp,
             'medianPc' : medianPc,
             'medianTc' : medianTc,
-            'm' : m,
+            'mprop' : self.m0 - m,
             'r' : r
         }
 
-    def simulationHalnder(self, P0 , OF0, eps , L , dt = 0.01 , printInfo = False, breakAtFailure= False, flightProfile = flightProfile , writeDetaildFileLog = False , filename = 'burnData.txt'):
-        At , r0 = self.simInit(P0 = P0, OF0 = OF0, eps = eps, L = L, flightProfile = flightProfile)
+    def stateSimulationHandler(self, P0 , OF0, eps , L , dt = 0.01 , printInfo = False, breakAtFailure= False, flightProfile = flightProfile , writeDetaildFileLog = False , filename = 'burnData.txt'):
+        At , r0 = self.stateSimInit(P0 = P0, OF0 = OF0, eps = eps, L = L, flightProfile = flightProfile)
+        ri , mi = self.getriMi(P0 = P0, OF0 = OF0 , eps = eps , L = L , flightProfile= flightProfile, r0 = r0)
         if breakAtFailure:
-            PtT = self.checkErrosiveBurningWithinLimits(At = At , r = r0)
+            PtT = self.checkErrosiveBurningWithinLimits(At = At , r = ri)
             if PtT:
                 res = {
                     'state' : 'Failure',
                     'cause' : 'Port to Throat Ratio out of bounds',
                     'At' : At,
                     'r0' : r0,
+                    'ri' : ri,
                     'Port To Throat Ratio' : PtT
                 }
                 if printInfo : print(res)
                 return res
-        engineRes = self.runEngineSim(
+        engineRes = self.runEngineStateSim(
             Pc = P0,
             OF = OF0,
             eps = eps,
@@ -326,18 +350,19 @@ class engineSimulator():
             writeDetaildFileLog = writeDetaildFileLog,
             filename = filename
         )
+        engineRes['At'] = At
+        engineRes['r0'] = r0
+        engineRes['ri'] = ri
+        engineRes['mprop'] = engineRes['mprop'] + mi
 
         if printInfo:
-            print('At' ,At)
-            print('Throat Radius' , math.sqrt(At / math.pi))
-            print('r0',r0)
-            print('Port to Throat',  math.pi * r0**2 / At )
+            print('Port to Throat',  math.pi * ri**2 / At )
             print(engineRes)                
             
 
         return engineRes
         
 if __name__ == '__main__':
-    engine = engineSimulator(accentDecentAccel=5,m0=46,n=0.46,a=0.15,Tb = 15)
+    engine = engineSimulator(accentDecentAccel=5,m0=46,n=0.46,a=0.15,Tb = 15,Ti = 0.5)
     engine.setMechanicalLimits(Pmax = 30 * 10 **5  , Tmax = 7000 , Mmax= 4)
-    engine.simulationHalnder(P0 = 20 * 10 ** 5 , OF0 = 7, eps = 2, L = 0.2, dt = 0.1, printInfo=True, breakAtFailure=True,writeDetaildFileLog=True)
+    engine.stateSimulationHandler(P0 = 20 * 10 ** 5 , OF0 = 7, eps = 2, L = 0.2, dt = 0.1, printInfo=True, breakAtFailure=True, writeDetaildFileLog=False)
