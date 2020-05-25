@@ -320,8 +320,9 @@ class engineSimulator():
             'r' : r
         }
 
-    def stateSimulationHandler(self, P0 , OF0, eps , L , dt = 0.01 , printInfo = False, breakAtFailure= False, flightProfile = flightProfile , writeDetaildFileLog = False , filename = 'burnData.txt'):
+    def stateSimulationHandler(self, P0 , OF0, eps , L , ThroatResizeCoeff = 1 , dt = 0.01 , printInfo = False, breakAtFailure= False, flightProfile = flightProfile , writeDetaildFileLog = False , filename = 'burnData.txt'):
         At , r0 = self.stateSimInit(P0 = P0, OF0 = OF0, eps = eps, L = L, flightProfile = flightProfile)
+        At *= ThroatResizeCoeff
         ri , mi = self.getriMi(P0 = P0, OF0 = OF0 , eps = eps , L = L , flightProfile= flightProfile, r0 = r0)
         if breakAtFailure:
             PtT = self.checkErrosiveBurningWithinLimits(At = At , r = ri)
