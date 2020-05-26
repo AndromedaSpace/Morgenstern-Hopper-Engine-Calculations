@@ -5,12 +5,12 @@ class engineOptimiser:
     setupData = None
     engine = None
 
-    def __init__ (self):
-        self.setupData = self.readData()
+    def __init__ (self,configFile="optimiser.conf"):
+        self.setupData = self.readData(filename=configFile)
         self.engine = self.initEngine(self.setupData['engine'])
 
 
-    def readData(self, filename = "optimiser.conf"):
+    def readData(self, filename):
         inFile = open(filename , 'r')
         jsonString = inFile.read()
         inFile.close()
