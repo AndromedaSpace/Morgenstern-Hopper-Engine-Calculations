@@ -42,8 +42,8 @@ class engineOptimiser:
 
         return engine
 
-        def cost(self,simResults):
-            return -simResults['medianIsp'] + simResults['medianPc'] + simResults['medianTc'] + simResults['mprop'] 
+    def cost(self,simResults):
+        return -simResults['medianIsp'] + simResults['medianPc'] + simResults['medianTc'] + simResults['mprop'] 
 
 
 
