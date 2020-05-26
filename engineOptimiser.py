@@ -45,7 +45,16 @@ class engineOptimiser:
     def cost(self,simResults):
         return -simResults['medianIsp'] + simResults['medianPc'] + simResults['medianTc'] + simResults['mprop'] 
 
+    def rangeGenerator(self,data):
+        temp = []
+        step = data['step']
+        cur = data['min']
+        
+        while cur <= data['max']:
+            temp.append(cur)
+            cur += step
 
+        return temp
 
 if __name__ == "__main__":
     optimiser = engineOptimiser()
