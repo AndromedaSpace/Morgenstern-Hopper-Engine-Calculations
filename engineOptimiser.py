@@ -2,12 +2,12 @@ import json
 from engineSimulator import engineSimulator
 
 class engineOptimiser:
-    setupData = None
+    confData = None
     engine = None
 
     def __init__ (self,configFile="optimiser.conf"):
-        self.setupData = self.readData(filename=configFile)
-        self.engine = self.initEngine(self.setupData['engine'])
+        self.confData = self.readData(filename=configFile)
+        self.engine = self.initEngine(self.confData['engine'])
 
 
     def readData(self, filename):
@@ -49,12 +49,41 @@ class engineOptimiser:
         temp = []
         step = data['step']
         cur = data['min']
-        
+
         while cur <= data['max']:
             temp.append(cur)
             cur += step
 
         return temp
+
+    def calculatePartialDerivative(self, currentState , derivativeTerm, confData):
+        dv = (confData['startingStates'][derivativeTerm]['max'] - confData['startingStates'][derivativeTerm]['min']) * confData['optimiser']['d']
+        
+        posState = currentState
+        posState[derivativeTerm] += dv / 2
+
+        negState = currentState
+        negState[derivativeTerm] -= dv / 2
+
+        posCost = self.cost(self.engine.stateSimulationHandler(
+            P0 = posState['P0'],
+            OF0 = posState['OF0'],
+            eps = posState['eps'],
+            L = posState['L'],
+            ThroatResizeCoeff = posState['ThroatResizeCoeff'],
+            dt = confData['optimiser']['dt']
+        ))
+
+        negCost = self.cost(self.engine.stateSimulationHandler(
+            P0 = negState['P0'],
+            OF0 = negState['OF0'],
+            eps = negState['eps'],
+            L = negState['L'],
+            ThroatResizeCoeff = negState['ThroatResizeCoeff'],
+            dt = confData['optimiser']['dt']
+        ))
+
+        return (posCost - negCost) / dv
 
 if __name__ == "__main__":
     optimiser = engineOptimiser()
