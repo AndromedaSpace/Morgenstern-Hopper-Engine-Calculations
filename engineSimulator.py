@@ -117,7 +117,8 @@ class engineSimulator():
         return 9.81
 
     def getRho(self,y):
-        return self.rho0
+        sealevel = Atmosphere(y)
+        return sealevel.density[0]
 
     def getReqThrust(self , m , D , accel  , g):
         return (accel + g) *  m + D
