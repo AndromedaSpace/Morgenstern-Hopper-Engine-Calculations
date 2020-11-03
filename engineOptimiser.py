@@ -5,9 +5,10 @@ class engineOptimiser:
     confData = None
     engine = None
 
-    def __init__ (self,configFile="optimiser.conf"):
+    def __init__ (self,configFile="optimiser.conf", nProcesses = 12):
         self.confData = self.readData(filename=configFile)
         self.engine = self.initEngine(self.confData['engine'])
+        self.nProcesses = nProcesses
 
 
     def readData(self, filename):
@@ -56,34 +57,16 @@ class engineOptimiser:
 
         return temp
 
-    def calculatePartialDerivative(self, currentState , derivativeTerm, confData):
-        dv = (confData['startingStates'][derivativeTerm]['max'] - confData['startingStates'][derivativeTerm]['min']) * confData['optimiser']['d']
+    def optimise(self):
+        startingPositions = {
+            'P0' : self.rangeGenerator(self.confData['startingStates']['P0']),
+            'OF0' : self.rangeGenerator(self.confData['startingStates']['OF0']),
+            'eps' : self.rangeGenerator(self.confData['startingStates']['eps']),
+            'ThroatResizeCoeff' : self.rangeGenerator(self.confData['startingStates']['ThroatResizeCoeff']),
+        }
         
-        posState = currentState
-        posState[derivativeTerm] += dv / 2
 
-        negState = currentState
-        negState[derivativeTerm] -= dv / 2
-
-        posCost = self.cost(self.engine.stateSimulationHandler(
-            P0 = posState['P0'],
-            OF0 = posState['OF0'],
-            eps = posState['eps'],
-            L = posState['L'],
-            ThroatResizeCoeff = posState['ThroatResizeCoeff'],
-            dt = confData['optimiser']['dt']
-        ))
-
-        negCost = self.cost(self.engine.stateSimulationHandler(
-            P0 = negState['P0'],
-            OF0 = negState['OF0'],
-            eps = negState['eps'],
-            L = negState['L'],
-            ThroatResizeCoeff = negState['ThroatResizeCoeff'],
-            dt = confData['optimiser']['dt']
-        ))
-
-        return (posCost - negCost) / dv
 
 if __name__ == "__main__":
     optimiser = engineOptimiser()
+    optimiser.optimise()
