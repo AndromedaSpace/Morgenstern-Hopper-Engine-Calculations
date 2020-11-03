@@ -1,5 +1,6 @@
 import json
 from engineSimulator import engineSimulator
+from scipy.optimize import minimize
 
 class engineOptimiser:
     confData = None
@@ -49,7 +50,7 @@ class engineOptimiser:
         L = x[3]
         ThroatResizeCoeff = x[4]
         CIsp, CP, CT, Cm, dt, engine = args
-        simResults = engine.stateSimulationHandler(P0,OF0,eps,L,dt,breakAtFailure=False)
+        simResults = engine.stateSimulationHandler(P0,OF0,eps,L,ThroatResizeCoeff,dt=dt,breakAtFailure=False)
         return - CIsp * simResults['medianIsp'] + CP * simResults['medianPc'] + CT * simResults['medianTc'] + Cm * simResults['mprop'] 
 
     def rangeGenerator(self,data):
@@ -71,15 +72,29 @@ class engineOptimiser:
             'L' : self.rangeGenerator(self.confData['startingStates']['L']),
             'ThroatResizeCoeff' : self.rangeGenerator(self.confData['startingStates']['ThroatResizeCoeff']),
         }
+        bounds = (
+            (0.1,self.confData['engine']['Pmax']),
+            (0.01,None),
+            (0.01,None),
+            (0.01,None),
+            (0.01,None)
+        )
+        print(bounds)
         localMinima = []
         for P0 in startingPositions['P0']:
             for OF0 in startingPositions['OF0']:
                 for L in startingPositions['L']:
                     for eps in startingPositions['eps']:
                         for ThroatResizeCoeff in startingPositions['ThroatResizeCoeff']:
-                            
-                            localMinima.append    
-
+                            print([P0,OF0,eps,L,ThroatResizeCoeff])
+                            localMinima.append(minimize(
+                                self.score,
+                                [P0,OF0,eps,L,ThroatResizeCoeff],
+                                (self.confData['optimiser']['CIsp'], self.confData['optimiser']['CP'], self.confData['optimiser']['CT'],self.confData['optimiser']['Cm'],self.confData['optimiser']['dt'],self.engine),
+                                method='TNC',
+                                bounds=bounds 
+                                ))
+                            print(localMinima[-1])
 
         
 
