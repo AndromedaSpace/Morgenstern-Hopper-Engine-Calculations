@@ -5,10 +5,9 @@ class engineOptimiser:
     confData = None
     engine = None
 
-    def __init__ (self,configFile="optimiser.conf", nProcesses = 12):
+    def __init__ (self,configFile="optimiser.conf"):
         self.confData = self.readData(filename=configFile)
         self.engine = self.initEngine(self.confData['engine'])
-        self.nProcesses = nProcesses
 
 
     def readData(self, filename):
@@ -43,7 +42,14 @@ class engineOptimiser:
 
         return engine
 
-    def score(self,simResults):
+    def score(self,x,*args):
+        P0 = x[0]
+        OF0 = x[1]
+        eps = x[2]
+        L = x[3]
+        ThroatResizeCoeff = x[4]
+        Pmax , Tmax, Mmax , dt, engine = args
+        simResults = engine.stateSimulationHandler(P0,OF0,eps,L,dt,breakAtFailure=False)
         return - 1 * simResults['medianIsp'] + 1 * simResults['medianPc'] + 1 * simResults['medianTc'] + 1 * simResults['mprop'] 
 
     def rangeGenerator(self,data):
@@ -62,8 +68,19 @@ class engineOptimiser:
             'P0' : self.rangeGenerator(self.confData['startingStates']['P0']),
             'OF0' : self.rangeGenerator(self.confData['startingStates']['OF0']),
             'eps' : self.rangeGenerator(self.confData['startingStates']['eps']),
+            'L' : self.rangeGenerator(self.confData['startingStates']['L']),
             'ThroatResizeCoeff' : self.rangeGenerator(self.confData['startingStates']['ThroatResizeCoeff']),
         }
+        localMinima = []
+        for P0 in startingPositions['P0']:
+            for OF0 in startingPositions['OF0']:
+                for L in startingPositions['L']:
+                    for eps in startingPositions['eps']:
+                        for ThroatResizeCoeff in startingPositions['ThroatResizeCoeff']:
+                            
+                            localMinima.append    
+
+
         
 
 
