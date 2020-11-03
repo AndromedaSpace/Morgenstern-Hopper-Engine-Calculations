@@ -42,8 +42,8 @@ class engineOptimiser:
 
         return engine
 
-    def cost(self,simResults):
-        return -simResults['medianIsp'] + simResults['medianPc'] + simResults['medianTc'] + simResults['mprop'] 
+    def score(self,simResults):
+        return - 1 * simResults['medianIsp'] + 1 * simResults['medianPc'] + 1 * simResults['medianTc'] + 1 * simResults['mprop'] 
 
     def rangeGenerator(self,data):
         temp = []
