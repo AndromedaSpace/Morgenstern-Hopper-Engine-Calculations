@@ -2,7 +2,7 @@ from copy import deepcopy
 from multiprocessing import Process, Queue
 from CEA_DataGenerator import CEADataGenerator
 import math
-import fluids
+from ambiance import Atmosphere
 from scipy.optimize import fsolve
 
 class engineSimulator():
@@ -110,13 +110,15 @@ class engineSimulator():
         return 0.052
     
     def getPe(self , h):
-        return self.Patm
+        sealevel = Atmosphere(h)
+        return sealevel.pressure[0]
 
     def getG(self,h):
         return 9.81
 
     def getRho(self,y):
-        return self.rho0
+        sealevel = Atmosphere(y)
+        return sealevel.density[0]
 
     def getReqThrust(self , m , D , accel  , g):
         return (accel + g) *  m + D
