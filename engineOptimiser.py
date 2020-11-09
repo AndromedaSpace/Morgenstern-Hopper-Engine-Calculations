@@ -50,9 +50,8 @@ class engineOptimiser:
         L = x[3]
         ThroatResizeCoeff = x[4]
         CIsp, CP, CT, Cm, dt, engine = args
-        print(P0,OF0,eps,L,ThroatResizeCoeff)
         simResults = engine.stateSimulationHandler(P0,OF0,eps,L,ThroatResizeCoeff,dt=dt,breakAtFailure=False)
-        print(- CIsp * simResults['medianIsp'] + CP * simResults['medianPc'] + CT * simResults['medianTc'] + Cm * simResults['mprop'] )
+        print(CIsp * simResults['medianIsp'] + CP * simResults['medianPc'] + CT * simResults['medianTc'] + Cm * simResults['mprop'] )
         return - CIsp * simResults['medianIsp'] + CP * simResults['medianPc'] + CT * simResults['medianTc'] + Cm * simResults['mprop'] 
 
     def rangeGenerator(self,data):
@@ -79,9 +78,8 @@ class engineOptimiser:
             (0.01,None),
             (0.01,None),
             (0.01,None),
-            (0.01,None)
+            (0.01,1)
         )
-        print(bounds)
         localMinima = []
         for P0 in startingPositions['P0']:
             for OF0 in startingPositions['OF0']:
